@@ -385,6 +385,7 @@ public final class CraftServer implements Server {
         if (type == PluginLoadOrder.STARTUP) {
             helpMap.clear();
             helpMap.initializeGeneralTopics();
+            loadCustomPermissions(); // EMC - Plugins should have access to this
         }
 
         Plugin[] plugins = pluginManager.getPlugins();
@@ -402,7 +403,7 @@ public final class CraftServer implements Server {
             setVanillaCommands(false);
             // Spigot end
             commandMap.registerServerAliases();
-            loadCustomPermissions();
+            // loadCustomPermissions(); // EMC - Moving up
             DefaultPermissions.registerCorePermissions();
             helpMap.initializeCommands();
         }

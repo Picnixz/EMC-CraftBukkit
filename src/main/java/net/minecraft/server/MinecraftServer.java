@@ -388,11 +388,6 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public void stop() throws ExceptionWorldConflict { // CraftBukkit - added throws
         if (!this.M) {
             i.info("Stopping server");
-            // CraftBukkit start
-            if (this.server != null) {
-                this.server.disablePlugins();
-            }
-            // CraftBukkit end
 
             if (this.ai() != null) {
                 this.ai().b();
@@ -416,6 +411,12 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 }
                 // CraftBukkit end */
             }
+
+            // CraftBukkit start
+            if (this.server != null) {
+                this.server.disablePlugins();
+            }
+            // CraftBukkit end
 
             if (this.l.d()) {
                 this.l.e();

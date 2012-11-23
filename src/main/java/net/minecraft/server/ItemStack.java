@@ -351,7 +351,16 @@ public final class ItemStack {
                 int j = EnchantmentManager.getEnchantmentLevel(Enchantment.DURABILITY.id, this);
                 int k = 0;
 
+                j = Math.min(5, j); // EMC
                 for (int l = 0; j > 0 && l < i; ++l) {
+                    // EMC start - make Unbreaking scale to level for armor. 5 = 80% chance of no loss.
+                    if (getItem() instanceof ItemArmor) {
+                        if (random.nextFloat() >= 1 - (.8 * (j / 5))) {
+                            k++;
+                        }
+                        continue;
+                    }
+                    // EMC end
                     if (EnchantmentDurability.a(this, j, random)) {
                         ++k;
                     }

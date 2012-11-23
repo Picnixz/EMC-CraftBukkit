@@ -2,7 +2,7 @@ package net.minecraft.server;
 
 public class EntityOcelot extends EntityTameableAnimal {
 
-    public boolean spawnBonus = true; // Spigot
+    public boolean spawnBonus = false; // Spigot // EMC
     private PathfinderGoalTempt bq;
 
     public EntityOcelot(World world) {

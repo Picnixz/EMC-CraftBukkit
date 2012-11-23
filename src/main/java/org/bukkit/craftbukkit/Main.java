@@ -53,7 +53,7 @@ public class Main {
         {
             Manifest manifest = new Manifest( resources.nextElement().openStream() );
             String ts = manifest.getMainAttributes().getValue( "Timestamp" );
-            if ( ts != null )
+            if ( ts != null && false) // EMC
             {
                 Date buildDate = new SimpleDateFormat( "yyyyMMdd-hhmm" ).parse( ts );
 

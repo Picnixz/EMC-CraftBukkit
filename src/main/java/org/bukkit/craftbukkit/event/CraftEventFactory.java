@@ -147,6 +147,7 @@ public class CraftEventFactory {
         BlockPlaceEvent event = new BlockPlaceEvent(placedBlock, replacedBlockState, blockClicked, player.getItemInHand(), player, canBuild);
         craftServer.getPluginManager().callEvent(event);
 
+        if (event.isCancelled()) { player.updateInventory(); } // EMC
         return event;
     }
 
@@ -241,6 +242,7 @@ public class CraftEventFactory {
         PlayerInteractEvent event = new PlayerInteractEvent(player, action, itemInHand, blockClicked, blockFace);
         craftServer.getPluginManager().callEvent(event);
 
+        if (action == Action.RIGHT_CLICK_BLOCK && event.isCancelled()) { player.updateInventory(); } // EMC
         return event;
     }
 
