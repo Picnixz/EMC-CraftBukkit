@@ -238,7 +238,7 @@ public class EntityOcelot extends EntityTameableAnimal {
 
     public GroupDataEntity a(GroupDataEntity groupdataentity) {
         groupdataentity = super.a(groupdataentity);
-        if (this.world.random.nextInt(7) == 0) {
+        if (false && this.world.random.nextInt(7) == 0) {
             for (int i = 0; i < 2; ++i) {
                 EntityOcelot entityocelot = new EntityOcelot(this.world);
 
