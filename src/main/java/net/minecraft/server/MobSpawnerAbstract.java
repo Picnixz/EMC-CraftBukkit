@@ -9,6 +9,8 @@ import java.util.List;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.SpawnerSpawnEvent;
+import org.bukkit.Bukkit; // EMC
+import org.bukkit.event.entity.SpawnerInitiateEvent; // EMC
 // CraftBukkit end
 
 public abstract class MobSpawnerAbstract {
@@ -46,7 +48,23 @@ public abstract class MobSpawnerAbstract {
     }
 
     public boolean f() {
-        return this.a().findNearbyPlayer((double) this.b() + 0.5D, (double) this.c() + 0.5D, (double) this.d() + 0.5D, (double) this.requiredPlayerRange) != null;
+        // EMC start - Add in SpawnerInitiateEvent
+        final World world = this.a();
+        final int x = this.b();
+        final int y = this.c();
+        final int z = this.d();
+        EntityHuman entity = world.findNearbyPlayer((double) x + 0.5D,
+            (double) y + 0.5D,
+            (double) z + 0.5D,
+            (double) this.requiredPlayerRange);
+        if (entity == null) {
+            return false;
+        }
+        org.bukkit.Location loc = new org.bukkit.Location(world.getWorld(), x, y, z);
+        SpawnerInitiateEvent event = new SpawnerInitiateEvent(this.mobName, world.getWorld(), loc, entity.getBukkitEntity());
+        Bukkit.getPluginManager().callEvent(event);
+        return !event.isCancelled();
+        // EMC end
     }
 
     public void g() {
