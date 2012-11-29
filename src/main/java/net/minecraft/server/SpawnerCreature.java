@@ -5,11 +5,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.CraftChunk;
 
 // CraftBukkit start
 import org.bukkit.craftbukkit.util.LongHash;
 import org.bukkit.craftbukkit.util.LongObjectHashMap;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+import org.bukkit.event.entity.SpawnTickEvent;
 // CraftBukkit end
 
 public final class SpawnerCreature {
@@ -64,6 +68,15 @@ public final class SpawnerCreature {
                 b0 = ( b0 > worldserver.spigotConfig.viewDistance ) ? (byte) worldserver.spigotConfig.viewDistance : b0;
                 b0 = ( b0 > 8 ) ? 8 : b0;
                 // Spigot End
+
+                // EMC start - SpawnTickEvent
+                SpawnTickEvent event = new SpawnTickEvent(worldserver.getWorld(), b0, entityhuman.getBukkitEntity());
+                Bukkit.getPluginManager().callEvent(event);
+                if (event.isCancelled()) {
+                    continue;
+                }
+                b0 = event.getSpawnRadius();
+                // EMC end
 
                 for (int l = -b0; l <= b0; ++l) {
                     for (int i1 = -b0; i1 <= b0; ++i1) {
