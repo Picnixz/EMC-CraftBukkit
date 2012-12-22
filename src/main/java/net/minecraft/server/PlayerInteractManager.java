@@ -1,10 +1,14 @@
 package net.minecraft.server;
 
 // CraftBukkit start
+import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.PlayerUseItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 // CraftBukkit end
 
@@ -324,6 +328,17 @@ public class PlayerInteractManager {
     }
 
     public boolean useItem(EntityHuman entityhuman, World world, ItemStack itemstack) {
+        // EMC Start - Allow control over if item should be consumed or not.
+        CraftItemStack craftitem = CraftItemStack.asCraftMirror(itemstack);
+        PlayerUseItemEvent event = new PlayerUseItemEvent((CraftPlayer)entityhuman.bukkitEntity, craftitem);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return false;
+        }
+        if (!craftitem.equals(event.getItem())) {
+            itemstack = CraftItemStack.asNMSCopy(event.getItem());
+        }
+        // EMC end
         int i = itemstack.count;
         int j = itemstack.getData();
         ItemStack itemstack1 = itemstack.a(world, entityhuman);
@@ -332,7 +347,8 @@ public class PlayerInteractManager {
             return false;
         } else {
             entityhuman.inventory.items[entityhuman.inventory.itemInHandIndex] = itemstack1;
-            if (this.isCreative()) {
+            // EMC - Add getConsumeItem check
+            if (!event.getConsumeItem() || this.isCreative()) {
                 itemstack1.count = i;
                 if (itemstack1.g()) {
                     itemstack1.setData(j);
@@ -385,13 +401,25 @@ public class PlayerInteractManager {
             }
 
             if (itemstack != null && !result) {
+                // EMC Start - Allow control over if item should be consumed or not.
+                CraftItemStack craftitem = CraftItemStack.asCraftMirror(itemstack);
+                PlayerUseItemEvent eventUse = new PlayerUseItemEvent((CraftPlayer)entityhuman.bukkitEntity, craftitem);
+                Bukkit.getPluginManager().callEvent(eventUse);
+                if (eventUse.isCancelled()) {
+                    return false;
+                }
+                if (!craftitem.equals(eventUse.getItem())) {
+                    itemstack = CraftItemStack.asNMSCopy(eventUse.getItem());
+                }
+                // EMC end
                 int j1 = itemstack.getData();
                 int k1 = itemstack.count;
 
                 result = itemstack.placeItem(entityhuman, world, i, j, k, l, f, f1, f2);
 
                 // The item count should not decrement in Creative mode.
-                if (this.isCreative()) {
+                // EMC - add getConsumeItem()
+                if (!eventUse.getConsumeItem() || this.isCreative()) { 
                     itemstack.setData(j1);
                     itemstack.count = k1;
                 }
