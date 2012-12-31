@@ -1,6 +1,7 @@
 package net.minecraft.server;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import net.minecraft.util.org.apache.commons.lang3.StringUtils;
@@ -274,8 +275,11 @@ public class ContainerAnvil extends Container {
                 this.a = 39;
             }
 
+            if (j == i && j > 0) { this.a = Math.min(15, 4 + itemstack.count); } // EMC - renames scale 5 to 15 levels
+            else if (j > 0) { this.a -= j; } // EMC - Free renames on combining
+
             if (this.a >= 40 && !this.o.abilities.canInstantlyBuild) {
-                itemstack1 = null;
+                this.a = 39; // EMC - cap at 39
             }
 
             if (itemstack1 != null) {
@@ -301,6 +305,16 @@ public class ContainerAnvil extends Container {
             this.b();
         }
     }
+
+    // EMC Start - send modified max level on change
+    @Override
+    public void b() {
+        super.b();
+        for (ICrafting listener : (List<ICrafting>) this.listeners) {
+            listener.setContainerData(this, 0, this.a);
+        }
+    }
+    // EMC end
 
     public void addSlotListener(ICrafting icrafting) {
         super.addSlotListener(icrafting);
