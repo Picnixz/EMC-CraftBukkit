@@ -178,6 +178,7 @@ public class PacketDataSerializer extends ByteBuf {
                 CraftItemStack.setItemMeta(itemstack, CraftItemStack.getItemMeta(itemstack));
                 // Spigot end
                 nbttagcompound = itemstack.tag;
+                nbttagcompound = com.empireminecraft.cbmisc.HiddenItemMeta.filterItemLore(nbttagcompound, true); // EMC
             }
 
             // Spigot start - protocol patch
@@ -239,6 +240,21 @@ public class PacketDataSerializer extends ByteBuf {
                 }
                 // Spigot end
 
+                // EMC start - get around creative menu having ultimate control of the NBT...
+                if (itemstack.tag.hasKey("display")) {
+                    NBTTagCompound display = itemstack.tag.getCompound("display");
+                    if (display.hasKey("OriginalLore")) {
+                        display.set("Lore", display.getList("OriginalLore", 8));
+                        display.remove("OriginalLore");
+                    }
+                }
+                // If shiny was used
+                if (itemstack.tag.hasKey("ench")) {
+                    if (itemstack.tag.getList("ench", 10).size() == 0) {
+                        itemstack.tag.remove("ench");
+                    }
+                }
+                // EMC end
                 CraftItemStack.setItemMeta(itemstack, CraftItemStack.getItemMeta(itemstack));
             }
             // CraftBukkit end
