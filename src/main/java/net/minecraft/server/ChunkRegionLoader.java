@@ -174,11 +174,14 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         }
 
         if (pendingchunktosave != null) {
+            int attempts = 0; while (attempts++ < 5) { // EMC
             try {
                 this.a(pendingchunktosave);
+                break; // EMC
             } catch (Exception exception) {
-                exception.printStackTrace();
+                //exception.printStackTrace(); // EMC
             }
+            try {Thread.sleep(10);} catch (InterruptedException e) {e.printStackTrace();} } // EMC
         }
 
         return true;

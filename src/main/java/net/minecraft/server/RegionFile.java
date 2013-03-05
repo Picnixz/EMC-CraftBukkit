@@ -177,7 +177,7 @@ public class RegionFile {
         return this.d(i, j) ? null : new DataOutputStream(new DeflaterOutputStream(new ChunkBuffer(this, i, j)));
     }
 
-    protected synchronized void a(int i, int j, byte[] abyte, int k) {
+    protected synchronized void a(int i, int j, byte[] abyte, int k) throws Exception { // EMC - Add exception
         try {
             int l = this.e(i, j);
             int i1 = l >> 8;
@@ -246,7 +246,8 @@ public class RegionFile {
 
             this.b(i, j, (int) (MinecraftServer.ar() / 1000L));
         } catch (IOException ioexception) {
-            ioexception.printStackTrace();
+            //ioexception.printStackTrace(); // EMC
+            throw (Exception) ioexception; // EMC - we want the upper try/catch to retry this
         }
     }
 
