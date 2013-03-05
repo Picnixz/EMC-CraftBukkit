@@ -205,6 +205,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         nbttagcompound.setByte("V", (byte) 1);
         nbttagcompound.setInt("xPos", chunk.locX);
         nbttagcompound.setInt("zPos", chunk.locZ);
+        MetaApiAccessor.saveChunkMetaNbt(nbttagcompound, chunk); // EMC
         nbttagcompound.setLong("LastUpdate", world.getTime());
         nbttagcompound.setIntArray("HeightMap", chunk.heightMap);
         nbttagcompound.setBoolean("TerrainPopulated", chunk.done);
@@ -306,6 +307,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         Chunk chunk = new Chunk(world, i, j);
 
         chunk.heightMap = nbttagcompound.getIntArray("HeightMap");
+        MetaApiAccessor.loadChunkMetaNbt(nbttagcompound, chunk); // EMC
         chunk.done = nbttagcompound.getBoolean("TerrainPopulated");
         chunk.lit = nbttagcompound.getBoolean("LightPopulated");
         chunk.s = nbttagcompound.getLong("InhabitedTime");

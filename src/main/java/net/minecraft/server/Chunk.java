@@ -98,6 +98,7 @@ public class Chunk {
 
     public org.bukkit.Chunk bukkitChunk;
     public boolean mustSave;
+    public MetaApiAccessor.ChunkMeta chunkMeta = new MetaApiAccessor.ChunkMeta(); // EMC
     // CraftBukkit end
 
     public Chunk(World world, Block[] ablock, int i, int j) {
