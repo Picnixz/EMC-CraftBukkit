@@ -34,6 +34,7 @@ import org.bukkit.plugin.PluginManager;
 public abstract class Entity {
 
     // CraftBukkit start
+    public com.empireminecraft.metaapi.MetaApi.MetaMap metaMap = null; // EMC
     private static final int CURRENT_LEVEL = 2;
     static boolean isLevelAtLeast(NBTTagCompound tag, int level) {
         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
@@ -1106,6 +1107,7 @@ public abstract class Entity {
                 this.yaw = 0;
             }
 
+            MetaApiAccessor.saveEntityMeta(this, nbttagcompound); // EMC
             if (Float.isNaN(this.pitch)) {
                 this.pitch = 0;
             }
@@ -1153,6 +1155,7 @@ public abstract class Entity {
             this.motX = nbttaglist1.d(0);
             this.motY = nbttaglist1.d(1);
             this.motZ = nbttaglist1.d(2);
+            MetaApiAccessor.loadEntityMeta(this, nbttagcompound); // EMC
             /* CraftBukkit start - Moved section down
             if (Math.abs(this.motX) > 10.0D) {
                 this.motX = 0.0D;

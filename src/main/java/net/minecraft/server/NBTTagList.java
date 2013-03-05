@@ -9,7 +9,16 @@ import java.util.List;
 
 public class NBTTagList extends NBTBase {
 
-    private List list = new ArrayList();
+    public List list = new ArrayList(); // EMC
+    // EMC start
+    public NBTBase getBase(int i) {
+        if (i >= 0 && i < this.list.size()) {
+            return (NBTBase) this.list.get(i);
+        } else {
+            return null;
+        }
+    }
+    // EMC end
     private byte type = 0;
 
     public NBTTagList() {}
@@ -24,11 +33,11 @@ public class NBTTagList extends NBTBase {
         try { // EMC
         dataoutput.writeByte(this.type);
         dataoutput.writeInt(this.list.size());
-        } catch (IOException e) {e.printStackTrace();} // EMC
 
         for (int i = 0; i < this.list.size(); ++i) {
             ((NBTBase) this.list.get(i)).write(dataoutput);
         }
+        } catch (IOException e) {e.printStackTrace();} // EMC
     }
 
     void load(DataInput datainput, int i, NBTReadLimiter nbtreadlimiter) {

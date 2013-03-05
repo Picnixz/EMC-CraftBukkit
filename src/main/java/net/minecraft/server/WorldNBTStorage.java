@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 // CraftBukkit start
 import java.util.UUID;
 
+import com.empireminecraft.metaapi.MetaApi; // EMC
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 // CraftBukkit end
 
@@ -27,6 +28,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
     private final long sessionId = MinecraftServer.ar();
     private final String f;
     private UUID uuid = null; // CraftBukkit
+    public MetaApi.MetaMap metaMap = new MetaApi.MetaMap(); // EMC
 
     public WorldNBTStorage(File file1, String s, boolean flag) {
         this.baseDir = new File(file1, s);
@@ -92,6 +94,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             try {
                 nbttagcompound = NBTCompressedStreamTools.a((InputStream) (new FileInputStream(file1)));
                 nbttagcompound1 = nbttagcompound.getCompound("Data");
+                MetaApiAccessor.loadWorldMeta(this, nbttagcompound1); // EMC
                 return new WorldData(nbttagcompound1);
             } catch (Exception exception) {
                 exception.printStackTrace();
@@ -103,6 +106,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             try {
                 nbttagcompound = NBTCompressedStreamTools.a((InputStream) (new FileInputStream(file1)));
                 nbttagcompound1 = nbttagcompound.getCompound("Data");
+                MetaApiAccessor.loadWorldMeta(this, nbttagcompound1); // EMC
                 return new WorldData(nbttagcompound1);
             } catch (Exception exception1) {
                 exception1.printStackTrace();
@@ -116,6 +120,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
         NBTTagCompound nbttagcompound1 = worlddata.a(nbttagcompound);
         NBTTagCompound nbttagcompound2 = new NBTTagCompound();
 
+        MetaApiAccessor.saveWorldMeta(this, nbttagcompound1); // EMC
         nbttagcompound2.set("Data", nbttagcompound1);
 
         try {
