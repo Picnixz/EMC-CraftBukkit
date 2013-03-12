@@ -410,6 +410,16 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         }
 
         this.closeInventory();
+
+        // EMC start
+        final java.util.HashMap<Integer,org.bukkit.inventory.ItemStack> overflowDrops = this.getBukkitEntity().getInventory()
+              .addItem(event.getItemsToKeep().toArray(new org.bukkit.inventory.ItemStack[0]));
+        for (org.bukkit.inventory.ItemStack stack : overflowDrops.values()) {
+            if (stack == null || stack.getType() == org.bukkit.Material.AIR) continue;
+            this.world.getWorld().dropItemNaturally(this.getBukkitEntity().getLocation(), stack);
+        }
+        // EMC end
+
         // CraftBukkit end
 
         // CraftBukkit - Get our scores instead
