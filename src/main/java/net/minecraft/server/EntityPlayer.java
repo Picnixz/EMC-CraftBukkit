@@ -397,6 +397,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
         // we clean the player's inventory after the EntityDeathEvent is called so plugins can get the exact state of the inventory.
         if (!event.getKeepInventory()) {
+            // EMC start - replace logic
+            processKeep(event, this.inventory.armor);
+            processKeep(event, this.inventory.items);
+            /*
             for (int i = 0; i < this.inventory.items.length; ++i) {
                 this.inventory.items[i] = null;
             }
@@ -404,6 +408,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             for (int i = 0; i < this.inventory.armor.length; ++i) {
                 this.inventory.armor[i] = null;
             }
+            */
+            // EMC end
         }
 
         this.closeInventory();
@@ -435,6 +441,30 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         this.a(StatisticList.v, 1);
         this.aW().g();
     }
+
+    // EMC start
+    private void processKeep(org.bukkit.event.entity.PlayerDeathEvent event, ItemStack[] inv) {
+        for (int i = 0; i < inv.length; ++i) {
+            if (inv[i] == null) continue;
+            final org.bukkit.inventory.ItemStack bukkitStack = inv[i].getBukkitStack();
+
+            boolean keep = false;
+            final Iterator<org.bukkit.inventory.ItemStack> iterator = event.getItemsToKeep().iterator();
+            while (iterator.hasNext()) {
+                final org.bukkit.inventory.ItemStack keepStack = iterator.next();
+                if (bukkitStack.equals(keepStack)) {
+                    iterator.remove();
+                    keep = true;
+                    break;
+                }
+            }
+            if (!keep) {
+                inv[i] = null;
+            }
+        }
+
+    }
+    // EMC end
 
     public boolean damageEntity(DamageSource damagesource, float f) {
         if (this.isInvulnerable()) {
