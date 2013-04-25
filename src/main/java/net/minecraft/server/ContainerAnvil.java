@@ -8,7 +8,11 @@ import net.minecraft.util.org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.empireminecraft.customevents.AnvilEvent; // EMC
+import org.bukkit.Bukkit; // EMC
 import org.bukkit.craftbukkit.inventory.CraftInventoryView; // CraftBukkit
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.entity.Player;
 
 public class ContainerAnvil extends Container {
 
@@ -281,6 +285,16 @@ public class ContainerAnvil extends Container {
             if (this.a >= 40 && !this.o.abilities.canInstantlyBuild) {
                 this.a = 39; // EMC - cap at 39
             }
+            // EMC start
+            AnvilEvent event = new AnvilEvent((Player) player.player.getBukkitEntity(), CraftItemStack.asBukkitCopy(itemstack), CraftItemStack.asBukkitCopy(itemstack2), CraftItemStack.asBukkitCopy(itemstack1), this.a);
+            Bukkit.getPluginManager().callEvent(event);
+            if (event.isCancelled()) {
+                itemstack1 = null;
+            } else {
+                itemstack1 = CraftItemStack.asNMSCopy(event.getResult());
+                this.a = event.getCost();
+            }
+            // EMC end
 
             if (itemstack1 != null) {
                 i1 = itemstack1.getRepairCost();
