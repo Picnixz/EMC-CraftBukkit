@@ -3,6 +3,7 @@ package net.minecraft.server;
 import java.util.List;
 
 // CraftBukkit start
+import com.empireminecraft.customevents.ArrowHitBlockEvent;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
@@ -306,7 +307,9 @@ public class EntityArrow extends Entity implements IProjectile {
                     this.shake = 7;
                     this.setCritical(false);
                     if (this.g.getMaterial() != Material.AIR) {
+                        if (new ArrowHitBlockEvent(this.getBukkitEntity(), world.getWorld().getBlockAt(this.d, this.e, this.f)).callEvent()) { // EMC
                         this.g.a(this.world, this.d, this.e, this.f, (Entity) this);
+                        } // EMC
                     }
                 }
             }
