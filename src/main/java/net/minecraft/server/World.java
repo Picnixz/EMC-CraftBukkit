@@ -1147,6 +1147,7 @@ public abstract class World implements IBlockAccess {
         }
 
         entity.valid = true; // CraftBukkit
+        new com.empireminecraft.customevents.EntityEvents.EntitySpawnEvent(entity.bukkitEntity).callEvent(); // EMC
     }
 
     protected void b(Entity entity) {
@@ -1154,6 +1155,7 @@ public abstract class World implements IBlockAccess {
             ((IWorldAccess) this.u.get(i)).b(entity);
         }
 
+        new com.empireminecraft.customevents.EntityEvents.EntityDespawnEvent(entity.bukkitEntity).callEvent(); // EMC
         entity.valid = false; // CraftBukkit
     }
 
