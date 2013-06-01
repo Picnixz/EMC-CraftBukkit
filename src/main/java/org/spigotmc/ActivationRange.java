@@ -261,6 +261,7 @@ public class ActivationRange
      */
     public static boolean checkIfActive(Entity entity)
     {
+        if (entity.isDisabled) return true; // EMC
         SpigotTimings.checkIfActiveTimer.startTiming();
         boolean isActive = entity.activatedTick >= MinecraftServer.currentTick || entity.defaultActivationState;
 

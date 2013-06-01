@@ -12,6 +12,7 @@ public class EntityItem extends Entity {
     private static final Logger d = LogManager.getLogger();
     public int age;
     public int pickupDelay;
+    public boolean canDespawn = true; // EMC
     private int e;
     private String f;
     private String g;
@@ -125,7 +126,7 @@ public class EntityItem extends Entity {
             // Spigot end
 
             // ++this.age; // CraftBukkit - Moved up
-            if (!this.world.isStatic && this.age >= world.spigotConfig.itemDespawnRate) { // Spigot
+            if (canDespawn && !this.world.isStatic && this.age >= world.spigotConfig.itemDespawnRate) { // Spigot // EMC
                 // CraftBukkit start - fire ItemDespawnEvent
                 if (org.bukkit.craftbukkit.event.CraftEventFactory.callItemDespawnEvent(this).isCancelled()) {
                     this.age = 0;

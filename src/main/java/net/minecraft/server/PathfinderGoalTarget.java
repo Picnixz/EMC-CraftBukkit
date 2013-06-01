@@ -53,7 +53,7 @@ public abstract class PathfinderGoalTarget extends PathfinderGoal {
     }
 
     protected double f() {
-        AttributeInstance attributeinstance = this.c.getAttributeInstance(GenericAttributes.b);
+        final AttributeInstance attributeinstance = this.c.getAttributeInstance(AttributesAccessor.targetRange); // EMC
 
         return attributeinstance == null ? 16.0D : attributeinstance.getValue();
     }

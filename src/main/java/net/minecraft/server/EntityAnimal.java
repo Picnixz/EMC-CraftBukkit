@@ -4,7 +4,7 @@ import java.util.List;
 
 public abstract class EntityAnimal extends EntityAgeable implements IAnimal {
 
-    private int love;
+    public int love; // EMC
     private int bq;
     private EntityHuman br;
 

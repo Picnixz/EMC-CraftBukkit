@@ -10,6 +10,7 @@ import org.bukkit.event.entity.EntityUnleashEvent;
 
 public abstract class EntityCreature extends EntityInsentient {
 
+    public boolean peaceful = false; // EMC
     public static final UUID h = UUID.fromString("E199AD21-BA8A-4C53-8D13-6182D5C69D3A");
     public static final AttributeModifier i = (new AttributeModifier(h, "Fleeing speed bonus", 2.0D, 2)).a(false);
     public PathEntity pathEntity; // CraftBukkit - private -> public
@@ -42,7 +43,7 @@ public abstract class EntityCreature extends EntityInsentient {
 
         if (this.target == null) {
             // CraftBukkit start
-            Entity target = this.findTarget();
+            Entity target = peaceful ? null : this.findTarget(); // EMC
             if (target != null) {
                 EntityTargetEvent event = new EntityTargetEvent(this.getBukkitEntity(), target.getBukkitEntity(), EntityTargetEvent.TargetReason.CLOSEST_PLAYER);
                 this.world.getServer().getPluginManager().callEvent(event);
@@ -80,6 +81,7 @@ public abstract class EntityCreature extends EntityInsentient {
             }
             // CraftBukkit end
         }
+        if (peaceful) target = null; // EMC
 
         if (this.target instanceof EntityPlayer && ((EntityPlayer) this.target).playerInteractManager.isCreative()) {
             this.target = null;

@@ -18,9 +18,9 @@ public abstract class EntityInsentient extends EntityLiving {
     private ControllerMove moveController;
     private ControllerJump bm;
     private EntityAIBodyControl bn;
-    private Navigation navigation;
-    protected final PathfinderGoalSelector goalSelector;
-    protected final PathfinderGoalSelector targetSelector;
+    public Navigation navigation;
+    public final PathfinderGoalSelector goalSelector;
+    public final PathfinderGoalSelector targetSelector;
     private EntityLiving goalTarget;
     private EntitySenses bq;
     private ItemStack[] equipment = new ItemStack[5];
@@ -720,6 +720,7 @@ public abstract class EntityInsentient extends EntityLiving {
 
     public GroupDataEntity prepare(GroupDataEntity groupdataentity) {
         this.getAttributeInstance(GenericAttributes.b).a(new AttributeModifier("Random spawn bonus", this.random.nextGaussian() * 0.05D, 1));
+        AttributesAccessor.configureAttributes(this); // EMC
         return groupdataentity;
     }
 

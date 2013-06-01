@@ -89,6 +89,7 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
     }
 
     public boolean n(Entity entity) {
+        if (peaceful) return false; // EMC
         float f = (float) this.getAttributeInstance(GenericAttributes.e).getValue();
         int i = 0;
 

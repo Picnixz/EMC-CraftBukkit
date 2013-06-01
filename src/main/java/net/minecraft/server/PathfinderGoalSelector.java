@@ -13,8 +13,8 @@ public class PathfinderGoalSelector {
 
     private static final Logger a = LogManager.getLogger();
     // CraftBukkit start - ArrayList -> UnsafeList
-    private List b = new UnsafeList();
-    private List c = new UnsafeList();
+    public List b = new UnsafeList(); // EMC
+    public List c = new UnsafeList(); // EMC
     // CraftBukkit end
     private final MethodProfiler d;
     private int e;

@@ -1615,7 +1615,7 @@ public abstract class World implements IBlockAccess {
             entity.U = entity.locZ;
             entity.lastYaw = entity.yaw;
             entity.lastPitch = entity.pitch;
-            if (flag && entity.ag) {
+            if (flag && entity.ag && !entity.isDisabled) { // EMC
                 ++entity.ticksLived;
                 if (entity.vehicle != null) {
                     entity.ab();
