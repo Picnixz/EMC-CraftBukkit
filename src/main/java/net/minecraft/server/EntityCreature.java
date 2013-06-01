@@ -29,6 +29,7 @@ public abstract class EntityCreature extends EntityInsentient {
         return false;
     }
 
+    public boolean peaceful = false; // EMC
     protected void bp() {
         this.world.methodProfiler.a("ai");
         if (this.bo > 0 && --this.bo == 0) {
@@ -42,7 +43,7 @@ public abstract class EntityCreature extends EntityInsentient {
 
         if (this.target == null) {
             // CraftBukkit start
-            Entity target = this.findTarget();
+            Entity target = peaceful ? null : this.findTarget(); // EMC
             if (target != null) {
                 EntityTargetEvent event = new EntityTargetEvent(this.getBukkitEntity(), target.getBukkitEntity(), EntityTargetEvent.TargetReason.CLOSEST_PLAYER);
                 this.world.getServer().getPluginManager().callEvent(event);
@@ -80,6 +81,7 @@ public abstract class EntityCreature extends EntityInsentient {
             }
             // CraftBukkit end
         }
+        if (peaceful) target = null; // EMC
 
         if (this.target instanceof EntityPlayer && ((EntityPlayer) this.target).playerInteractManager.isCreative()) {
             this.target = null;

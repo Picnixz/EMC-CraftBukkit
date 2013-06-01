@@ -1585,6 +1585,7 @@ public abstract class World implements IBlockAccess {
         byte b0 = 32;
 
         EntityTasksHandler.tickHandler(entity); // EMC
+        if (entity.isDisabled) { return; } // EMC
         // Spigot start
         if (!org.spigotmc.ActivationRange.checkIfActive(entity)) {
             entity.ticksLived++;

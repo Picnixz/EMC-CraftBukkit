@@ -36,7 +36,9 @@ public abstract class Entity {
     // CraftBukkit start
     public com.empireminecraft.metaapi.MetaApi.MetaMap metaMap = null; // EMC
     public EntityTasksHandler.TaskList entityTasks = new EntityTasksHandler.TaskList(); // EMC
+    public boolean isDisabled = false; // EMC
     private static final int CURRENT_LEVEL = 2;
+
     static boolean isLevelAtLeast(NBTTagCompound tag, int level) {
         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
     }
@@ -96,7 +98,7 @@ public abstract class Entity {
     public boolean inWater; // Spigot - protected -> public
     public int noDamageTicks;
     private boolean justCreated;
-    protected boolean fireProof;
+    public boolean fireProof; // EMC
     protected DataWatcher datawatcher;
     private double g;
     private double h;
@@ -182,6 +184,7 @@ public abstract class Entity {
         this.dead = true;
     }
 
+    public void setSize(float w, float l) {a(w, l);} // EMC
     protected void a(float f, float f1) {
         float f2;
 
@@ -246,6 +249,7 @@ public abstract class Entity {
     }
 
     public void setPosition(double d0, double d1, double d2) {
+        if (isDisabled) { return; } // EMC
         this.locX = d0;
         this.locY = d1;
         this.locZ = d2;
@@ -260,6 +264,7 @@ public abstract class Entity {
     }
 
     public void B() {
+        if (isDisabled) { return; } // EMC
         this.world.methodProfiler.a("entityBaseTick");
         if (this.vehicle != null && this.vehicle.dead) {
             this.vehicle = null;
@@ -418,6 +423,7 @@ public abstract class Entity {
     }
 
     public void move(double d0, double d1, double d2) {
+        if (isDisabled) { return; } // EMC
         // CraftBukkit start - Don't do anything if we aren't moving
         // We need to do this regardless of whether or not we are moving thanks to portals
         try {
@@ -952,6 +958,7 @@ public abstract class Entity {
     }
 
     public void setLocation(double d0, double d1, double d2, float f, float f1) {
+        if (isDisabled) { return; } // EMC
         this.lastX = this.locX = d0;
         this.lastY = this.locY = d1;
         this.lastZ = this.locZ = d2;
@@ -973,6 +980,7 @@ public abstract class Entity {
     }
 
     public void setPositionRotation(double d0, double d1, double d2, float f, float f1) {
+        if (isDisabled) { return; } // EMC
         this.S = this.lastX = this.locX = d0;
         this.T = this.lastY = this.locY = d1 + (double) this.height;
         this.U = this.lastZ = this.locZ = d2;
@@ -1017,6 +1025,7 @@ public abstract class Entity {
 
     int numCollisions = 0; // Spigot
     public void collide(Entity entity) {
+        if (isDisabled) { return; } // EMC
         if (entity.passenger != this && entity.vehicle != this) {
             double d0 = entity.locX - this.locX;
             double d1 = entity.locZ - this.locZ;
@@ -1045,6 +1054,7 @@ public abstract class Entity {
     }
 
     public void g(double d0, double d1, double d2) {
+        if (isDisabled) { return; } // EMC
         this.motX += d0;
         this.motY += d1;
         this.motZ += d2;
@@ -1056,6 +1066,7 @@ public abstract class Entity {
     }
 
     public boolean damageEntity(DamageSource damagesource, float f) {
+        if (isDisabled) { return false; } // EMC
         if (this.isInvulnerable()) {
             return false;
         } else {
@@ -1784,7 +1795,7 @@ public abstract class Entity {
     }
 
     public boolean isInvulnerable() {
-        return this.invulnerable;
+        return this.invulnerable || isDisabled; // EMC
     }
 
     public void k(Entity entity) {

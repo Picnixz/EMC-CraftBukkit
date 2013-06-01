@@ -114,6 +114,7 @@ public abstract class EntityLiving extends Entity {
         this.bb().b(GenericAttributes.a);
         this.bb().b(GenericAttributes.c);
         this.bb().b(GenericAttributes.d);
+        AttributesAccessor.initializeAttributes(this, this.d); // EMC
         if (!this.bj()) {
             this.getAttributeInstance(GenericAttributes.d).setValue(0.10000000149011612D);
         }

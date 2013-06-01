@@ -10,10 +10,10 @@ public class PathfinderGoalArrowAttack extends PathfinderGoal {
     private int d;
     private double e;
     private int f;
-    private int g;
-    private int h;
-    private float i;
-    private float j;
+    public int g; // EMC - min ranged time
+    public int h; // EMC - max ranged time
+    public float i; // EMC - max ranged dist
+    public float j; // EMC - max ranged dist squared
 
     public PathfinderGoalArrowAttack(IRangedEntity irangedentity, double d0, int i, float f) {
         this(irangedentity, d0, i, i, f);
