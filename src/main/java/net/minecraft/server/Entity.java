@@ -35,6 +35,7 @@ public abstract class Entity {
 
     // CraftBukkit start
     public com.empireminecraft.metaapi.MetaApi.MetaMap metaMap = null; // EMC
+    public EntityTasksHandler.TaskList entityTasks = new EntityTasksHandler.TaskList(); // EMC
     private static final int CURRENT_LEVEL = 2;
     static boolean isLevelAtLeast(NBTTagCompound tag, int level) {
         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
