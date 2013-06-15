@@ -74,7 +74,9 @@ public class ItemBow extends Item {
             if (flag) {
                 entityarrow.fromPlayer = 2;
             } else {
+                if (event.getConsumeArrow()) { // EMC
                 entityhuman.inventory.a(Items.ARROW);
+                } // EMC
             }
 
             if (!world.isStatic) {
