@@ -42,6 +42,7 @@ public class EntityTrackerEntry {
     public Set trackedPlayers = new HashSet();
 
     public EntityTrackerEntry(Entity entity, int i, int j, boolean flag) {
+        entity.tracker = this; // EMC
         this.tracker = entity;
         this.b = i;
         this.c = j;
@@ -304,7 +305,18 @@ public class EntityTrackerEntry {
             double d0 = entityplayer.locX - (double) (this.xLoc / 32);
             double d1 = entityplayer.locZ - (double) (this.zLoc / 32);
 
-            if (d0 >= (double) (-this.b) && d0 <= (double) this.b && d1 >= (double) (-this.b) && d1 <= (double) this.b) {
+            // EMC start
+            boolean parent = true;
+            boolean force = false;
+            if (tracker.vehicle != null) {
+                parent = this.tracker.passenger instanceof EntityPlayer || (
+                    tracker.vehicle.tracker != null && tracker.vehicle.tracker.trackedPlayers.contains(entityplayer)
+                );
+                force = true;
+            }
+            // Wrap with "parent && (force || ( ... ))"
+            if (parent && (force || (d0 >= (double) (-this.b) && d0 <= (double) this.b && d1 >= (double) (-this.b) && d1 <= (double) this.b))) {
+            // EMC end
                 if (!this.trackedPlayers.contains(entityplayer) && (this.d(entityplayer) || this.tracker.n)) {
                     // CraftBukkit start - respect vanish API
                     if (this.tracker instanceof EntityPlayer) {
@@ -324,6 +336,11 @@ public class EntityTrackerEntry {
                     if (!this.tracker.getDataWatcher().d()) {
                         entityplayer.playerConnection.sendPacket(new PacketPlayOutEntityMetadata(this.tracker.getId(), this.tracker.getDataWatcher(), true));
                     }
+                    // EMC start
+                    if (tracker.passenger != null && tracker.passenger.tracker != null) {
+                        tracker.passenger.tracker.updatePlayer(entityplayer);
+                    }
+                    // EMC end
 
                     if (this.tracker instanceof EntityLiving) {
                         AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.tracker).bb();
@@ -396,6 +413,11 @@ public class EntityTrackerEntry {
                 }
             } else if (this.trackedPlayers.contains(entityplayer)) {
                 this.trackedPlayers.remove(entityplayer);
+                // EMC start
+                if (tracker.passenger != null && tracker.passenger.tracker != null) {
+                    tracker.passenger.tracker.updatePlayer(entityplayer);
+                }
+                // EMC end
                 entityplayer.d(this.tracker);
             }
         }
