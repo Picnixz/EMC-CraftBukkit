@@ -39,6 +39,7 @@ public abstract class Entity {
     static boolean isLevelAtLeast(NBTTagCompound tag, int level) {
         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
     }
+    EntityTrackerEntry tracker; // EMC
     // CraftBukkit end
 
     private static int entityCount;
