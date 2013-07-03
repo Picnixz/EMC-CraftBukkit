@@ -181,7 +181,10 @@ public class TileEntity {
 
     public void a(CrashReportSystemDetails crashreportsystemdetails) {
         crashreportsystemdetails.a("Name", (Callable) (new CrashReportTileEntityName(this)));
+        Block block = this.q(); // EMC
+        if (block != null) { // EMC
         CrashReportSystemDetails.a(crashreportsystemdetails, this.x, this.y, this.z, this.q(), this.p());
+        } // EMC
         crashreportsystemdetails.a("Actual block type", (Callable) (new CrashReportTileEntityType(this)));
         crashreportsystemdetails.a("Actual block data value", (Callable) (new CrashReportTileEntityData(this)));
     }
