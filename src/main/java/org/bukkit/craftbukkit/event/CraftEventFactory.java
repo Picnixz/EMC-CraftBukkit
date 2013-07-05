@@ -849,6 +849,11 @@ public class CraftEventFactory {
         InventoryCloseEvent event = new InventoryCloseEvent(human.activeContainer.getBukkitView());
         human.world.getServer().getPluginManager().callEvent(event);
         human.activeContainer.transferTo(human.defaultContainer, human.getBukkitEntity());
+        // EMC start
+        if (event.getInventory().getViewers().isEmpty()) {
+            org.bukkit.craftbukkit.inventory.CraftInventory.meta.remove(((org.bukkit.craftbukkit.inventory.CraftInventory)event.getInventory()).getInventory());
+        }
+        // EMC end
     }
 
     public static void handleEditBookEvent(EntityPlayer player, ItemStack newBookItem) {

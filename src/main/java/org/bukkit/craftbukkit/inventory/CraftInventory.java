@@ -28,7 +28,16 @@ import org.bukkit.Material;
 
 public class CraftInventory implements Inventory {
     protected final IInventory inventory;
-
+	// EMC start
+	public static final java.util.WeakHashMap<IInventory, HashMap<String, Object>> meta = new java.util.WeakHashMap<IInventory, HashMap<String, Object>>(64);
+	public HashMap<String, Object> getMeta() {
+		HashMap<String, Object> metaMap = meta.get(inventory);
+		if (metaMap == null) {
+			metaMap = new HashMap<String, Object>(8);
+			meta.put(inventory, metaMap);
+		}
+		return metaMap;
+	} // EMC end
     public CraftInventory(IInventory inventory) {
         this.inventory = inventory;
     }
