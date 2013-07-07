@@ -64,6 +64,7 @@ public final class ItemStack {
         ItemStack itemstack = new ItemStack();
 
         itemstack.c(nbttagcompound);
+        if (itemstack.count < 0) itemstack.count = 0; // EMC
         return itemstack.getItem() != null ? itemstack : null;
     }
 

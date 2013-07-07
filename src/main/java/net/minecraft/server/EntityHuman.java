@@ -529,7 +529,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
     public EntityItem a(ItemStack itemstack, boolean flag, boolean flag1) {
         if (itemstack == null) {
             return null;
-        } else if (itemstack.count == 0) {
+        } else if (itemstack.count <= 0) { // EMC
             return null;
         } else {
             EntityItem entityitem = new EntityItem(this.world, this.locX, this.locY - 0.30000001192092896D + (double) this.getHeadHeight(), this.locZ, itemstack);

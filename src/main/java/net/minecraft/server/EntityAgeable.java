@@ -57,7 +57,7 @@ public abstract class EntityAgeable extends EntityCreature {
 
                         if (!entityhuman.abilities.canInstantlyBuild) {
                             --itemstack.count;
-                            if (itemstack.count == 0) {  // CraftBukkit - allow less than 0 stacks as "infinite"
+                            if (itemstack.count <= 0) { // EMC
                                 entityhuman.inventory.setItem(entityhuman.inventory.itemInHandIndex, (ItemStack) null);
                             }
                         }

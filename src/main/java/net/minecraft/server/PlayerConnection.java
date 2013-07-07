@@ -692,7 +692,7 @@ public class PlayerConnection implements PacketPlayInListener {
         }
 
         itemstack = this.player.inventory.getItemInHand();
-        if (itemstack != null && itemstack.count == 0) {
+        if (itemstack != null && itemstack.count <= 0) { // EMC
             this.player.inventory.items[this.player.inventory.itemInHandIndex] = null;
             itemstack = null;
         }
