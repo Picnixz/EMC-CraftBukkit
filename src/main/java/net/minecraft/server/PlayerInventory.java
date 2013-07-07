@@ -486,7 +486,7 @@ public class PlayerInventory implements IInventory {
 
     public ItemStack getCarried() {
         // CraftBukkit start
-        if (this.g != null && this.g.count == 0) {
+        if (this.g != null && this.g.count <= 0) { // EMC
             this.setCarried(null);
         }
         // CraftBukkit end
