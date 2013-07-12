@@ -22,6 +22,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     protected Entity entity;
     private EntityDamageEvent lastDamageEvent;
 
+    // EMC start
+    public boolean spawnAt(Location loc) {
+        return spawnAt(loc, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DEFAULT);
+    }
+    public boolean spawnAt(Location loc, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason spawnReason) { // EMC
+        entity.world = ((CraftWorld) loc.getWorld()).getHandle();
+        entity.setLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
+        return !entity.valid && entity.world.addEntity(entity, spawnReason);
+    }
+    // EMC end
     public CraftEntity(final CraftServer server, final Entity entity) {
         this.server = server;
         this.entity = entity;

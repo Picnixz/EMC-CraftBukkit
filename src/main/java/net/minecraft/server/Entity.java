@@ -1097,6 +1097,7 @@ public abstract class Entity {
         }
     }
 
+    public boolean serializeEntity(NBTTagCompound cmp) { Entity pass = passenger; passenger = null;boolean res = d(cmp); passenger = pass; return res; } // EMC
     public boolean d(NBTTagCompound nbttagcompound) {
         String s = this.W();
 
