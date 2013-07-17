@@ -832,6 +832,13 @@ public final class CraftServer implements Server {
             }
             world.spigotConfig.init(); // Spigot
         }
+        // Spigot start
+        for (Plugin plugin : pluginManager.getPlugins()) {
+            entityMetadata.invalidateAll(plugin);
+            worldMetadata.invalidateAll(plugin);
+            playerMetadata.invalidateAll(plugin);
+        }
+        // Spigot end
 
         pluginManager.clearPlugins();
         commandMap.clearCommands();
