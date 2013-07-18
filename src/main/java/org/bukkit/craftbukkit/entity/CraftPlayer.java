@@ -477,11 +477,31 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (event.isCancelled()) {
             return false;
         }
-        
+        // EMC start
         // Spigot Start
-        eject();
-        leaveVehicle();
+        //eject();
+        //leaveVehicle();
         // Spigot End
+
+        // EMC start
+        Entity vehicle = entity.vehicle;
+        Entity passenger = entity.passenger;
+        if (vehicle != null) {
+            vehicle.passenger = null;
+            vehicle.teleportTo(location, false);
+            vehicle = vehicle.getBukkitEntity().getHandle();
+            entity.vehicle = vehicle;
+            vehicle.passenger = entity;
+        }
+
+        if (passenger != null) {
+            passenger.vehicle = null;
+            passenger.teleportTo(location, false);
+            passenger = passenger.getBukkitEntity().getHandle();
+            entity.passenger = passenger;
+            passenger.vehicle = entity;
+        }
+        // EMC end
 
         // Update the From Location
         from = event.getFrom();
@@ -502,6 +522,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         } else {
             server.getHandle().moveToWorld(entity, toWorld.dimension, true, to, true);
         }
+
+        // EMC start
+        if (vehicle != null) {
+            vehicle.retrack();
+            //entity.retrack();
+        }
+        if (passenger != null) {
+            passenger.retrack();
+        }
+        // EMC end
         return true;
     }
 
