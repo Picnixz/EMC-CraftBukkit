@@ -43,6 +43,14 @@ public abstract class Entity {
         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
     }
     EntityTrackerEntry tracker; // EMC
+    // EMC start
+    public void retrack() {
+        final EntityTracker entityTracker = ((WorldServer) world).getTracker();
+        entityTracker.untrackEntity(this);
+        entityTracker.track(this);
+
+    }
+    // EMC end
     // CraftBukkit end
 
     private static int entityCount;
@@ -1866,7 +1874,7 @@ public abstract class Entity {
             // minecraftserver.getPlayerList().a(this, j, worldserver, worldserver1);
             boolean before = worldserver1.chunkProviderServer.forceChunkLoad;
             worldserver1.chunkProviderServer.forceChunkLoad = true;
-            worldserver1.getMinecraftServer().getPlayerList().repositionEntity(this, exit, portal);
+            //worldserver1.getMinecraftServer().getPlayerList().repositionEntity(this, exit, portal); // EMC - no... this entity is dead;
             worldserver1.chunkProviderServer.forceChunkLoad = before;
             // CraftBukkit end
             this.world.methodProfiler.c("reloading");
@@ -1874,6 +1882,10 @@ public abstract class Entity {
 
             if (entity != null) {
                 entity.a(this, true);
+                // EMC start - move entity to new location
+                exit.getBlock(); // force load
+                entity.setLocation(exit.getX(), exit.getY(), exit.getZ(), exit.getYaw(), exit.getPitch());
+                // EMC end
                 /* CraftBukkit start - We need to do this...
                 if (j == 1 && i == 1) {
                     ChunkCoordinates chunkcoordinates = worldserver1.getSpawn();
