@@ -1,4 +1,9 @@
 package net.minecraft.server;
+//
+import com.empireminecraft.customevents.MonsterEggSpawnEvent;
+import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.entity.LivingEntity; //
 
 public class ItemMonsterEgg extends Item {
 
@@ -34,7 +39,7 @@ public class ItemMonsterEgg extends Item {
                 d0 = 0.5D;
             }
 
-            Entity entity = a(world, itemstack.getData(), (double) i + 0.5D, (double) j + d0, (double) k + 0.5D);
+            Entity entity = spawnCreature(world, entityhuman, itemstack, itemstack.getData(), (double) i + 0.5D, (double) j + d0, (double) k + 0.5D); // EMC
 
             if (entity != null) {
                 if (entity instanceof EntityLiving && itemstack.hasName()) {
@@ -73,7 +78,7 @@ public class ItemMonsterEgg extends Item {
                     }
 
                     if (world.getType(i, j, k) instanceof BlockFluids) {
-                        Entity entity = a(world, itemstack.getData(), (double) i, (double) j, (double) k);
+                        Entity entity = spawnCreature(world, entityhuman, itemstack, itemstack.getData(), (double) i, (double) j, (double) k); // EMC
 
                         if (entity != null) {
                             if (entity instanceof EntityLiving && itemstack.hasName()) {
@@ -97,7 +102,15 @@ public class ItemMonsterEgg extends Item {
         return spawnCreature(world, i, d0, d1, d2, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER_EGG);
     }
 
-    public static Entity spawnCreature(World world, int i, double d0, double d1, double d2, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason spawnReason) {
+    // EMC start
+    public static Entity spawnCreature(World world, int i, double d0, double d1, double d2, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason spawnReason) { // EMC
+        return spawnCreature(world, null, null, i, d0, d1, d2, spawnReason);
+    }
+    public static Entity spawnCreature(World world, EntityHuman player, ItemStack item, int i, double d0, double d1, double d2) {
+        return spawnCreature(world, player, item, i, d0, d1, d2, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER_EGG);
+    }
+    public static Entity spawnCreature(World world, EntityHuman player, ItemStack item, int i, double d0, double d1, double d2, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason spawnReason) {
+    // EMC end
         // CraftBukkit end
         if (!EntityTypes.eggInfo.containsKey(Integer.valueOf(i))) {
             return null;
@@ -113,7 +126,24 @@ public class ItemMonsterEgg extends Item {
                     entityinsentient.aO = entityinsentient.yaw;
                     entityinsentient.aM = entityinsentient.yaw;
                     entityinsentient.prepare((GroupDataEntity) null);
-                    world.addEntity(entity, spawnReason); // CraftBukkit
+
+                    // EMC start - if false the spawn was cancelled, add new event
+                    if (!world.addEntity(entity, spawnReason)) { // CraftBukkit
+                        return null;
+                    }
+                    if (item != null) {
+                        final MonsterEggSpawnEvent event = new MonsterEggSpawnEvent(player.getBukkitEntity(), (LivingEntity) entity.getBukkitEntity(), CraftItemStack.asCraftMirror(item));
+
+                        if (!event.callEvent()) {
+                            world.removeEntity(entity);
+                            return null;
+                        }
+                        if (event.getEntity().getEntityId() != entity.getId()) {
+                            world.removeEntity(entity);
+                            entity = entityinsentient = (EntityInsentient) ((CraftEntity) event.getEntity()).getHandle();
+                        }
+                    }
+                    // EMC end
                     entityinsentient.r();
                 }
             }
