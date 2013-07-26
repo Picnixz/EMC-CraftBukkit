@@ -339,12 +339,14 @@ public final class CraftServer implements Server {
     public Player getPlayer(final String name) {
         Validate.notNull(name, "Name cannot be null");
 
-        Player[] players = getOnlinePlayers();
-
-        Player found = null;
+        Player found = getPlayerExact(name);
+        if (found != null) {
+            return found;
+        }
         String lowerName = name.toLowerCase();
         int delta = Integer.MAX_VALUE;
-        for (Player player : players) {
+        for (EntityPlayer entityPlayer : (List<EntityPlayer>)playerList.players) {
+            Player player = entityPlayer.playerConnection.getPlayer();
             if (player.getName().toLowerCase().startsWith(lowerName)) {
                 int curDelta = player.getName().length() - lowerName.length();
                 if (curDelta < delta) {
@@ -359,16 +361,8 @@ public final class CraftServer implements Server {
 
     public Player getPlayerExact(String name) {
         Validate.notNull(name, "Name cannot be null");
-
-        String lname = name.toLowerCase();
-
-        for (Player player : getOnlinePlayers()) {
-            if (player.getName().equalsIgnoreCase(lname)) {
-                return player;
-            }
-        }
-
-        return null;
+        final EntityPlayer entityPlayer = playerList.playerMap.get(name.toLowerCase());
+        return entityPlayer != null ? entityPlayer.getBukkitEntity() : null;
     }
 
     public int broadcastMessage(String message) {
@@ -384,7 +378,8 @@ public final class CraftServer implements Server {
 
         List<Player> matchedPlayers = new ArrayList<Player>();
 
-        for (Player iterPlayer : this.getOnlinePlayers()) {
+        for (EntityPlayer entityPlayer : (List<EntityPlayer>)playerList.players) {
+            Player iterPlayer = entityPlayer.playerConnection.getPlayer();
             String iterPlayerName = iterPlayer.getName();
 
             if (partialName.equalsIgnoreCase(iterPlayerName)) {
@@ -1278,7 +1273,8 @@ public final class CraftServer implements Server {
     public void sendPluginMessage(Plugin source, String channel, byte[] message) {
         StandardMessenger.validatePluginMessage(getMessenger(), source, channel, message);
 
-        for (Player player : getOnlinePlayers()) {
+        for (EntityPlayer entityPlayer : (List<EntityPlayer>)playerList.players) {
+            Player player = entityPlayer.playerConnection.getPlayer();
             player.sendPluginMessage(source, channel, message);
         }
     }
@@ -1286,7 +1282,8 @@ public final class CraftServer implements Server {
     public Set<String> getListeningPluginChannels() {
         Set<String> result = new HashSet<String>();
 
-        for (Player player : getOnlinePlayers()) {
+        for (EntityPlayer entityPlayer : (List<EntityPlayer>)playerList.players) {
+            Player player = entityPlayer.playerConnection.getPlayer();
             result.addAll(player.getListeningPluginChannels());
         }
 
@@ -1380,11 +1377,11 @@ public final class CraftServer implements Server {
     }
 
     public List<String> tabCompleteChat(Player player, String message) {
-        Player[] players = getOnlinePlayers();
         List<String> completions = new ArrayList<String>();
         PlayerChatTabCompleteEvent event = new PlayerChatTabCompleteEvent(player, message, completions);
         String token = event.getLastToken();
-        for (Player p : players) {
+        for (EntityPlayer entityPlayer : (List<EntityPlayer>)playerList.players) {
+            Player p = entityPlayer.playerConnection.getPlayer();
             if (player.canSee(p) && StringUtil.startsWithIgnoreCase(p.getName(), token)) {
                 completions.add(p.getName());
             }

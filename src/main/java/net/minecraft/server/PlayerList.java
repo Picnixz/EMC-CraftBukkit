@@ -43,6 +43,7 @@ public abstract class PlayerList {
     private static final SimpleDateFormat e = new SimpleDateFormat("yyyy-MM-dd \'at\' HH:mm:ss z");
     private final MinecraftServer server;
     public final List players = new java.util.concurrent.CopyOnWriteArrayList(); // CraftBukkit - ArrayList -> CopyOnWriteArrayList: Iterator safety
+    public final Map<String, EntityPlayer> playerMap = new java.util.HashMap<String, EntityPlayer>(); // CraftBukkit
     private final BanList banByName = new BanList(new File("banned-players.txt"));
     private final BanList banByIP = new BanList(new File("banned-ips.txt"));
     private final Set operators = new HashSet();
@@ -218,6 +219,7 @@ public abstract class PlayerList {
         cserver.detectListNameConflict(entityplayer); // CraftBukkit
         // this.sendAll(new PacketPlayOutPlayerInfo(entityplayer.getName(), true, 1000)); // CraftBukkit - replaced with loop below
         this.players.add(entityplayer);
+        this.playerMap.put(entityplayer.getName().toLowerCase(), entityplayer); // CraftBukkit
         WorldServer worldserver = this.server.getWorldServer(entityplayer.dimension);
 
         // CraftBukkit start
@@ -293,6 +295,7 @@ public abstract class PlayerList {
         worldserver.getPlayerChunkMap().removePlayer(entityplayer);
         this.players.remove(entityplayer);
         this.k.remove(entityplayer.getName());
+        this.playerMap.remove(entityplayer.getName().toLowerCase()); // CraftBukkit
         ChunkIOExecutor.adjustPoolSize(this.getPlayerCount()); // CraftBukkit
 
         // CraftBukkit start - .name -> .listName, replace sendAll with loop
@@ -374,6 +377,7 @@ public abstract class PlayerList {
 
         EntityPlayer entityplayer;
 
+        /* CraftBukkit start
         for (int i = 0; i < this.players.size(); ++i) {
             entityplayer = (EntityPlayer) this.players.get(i);
             if (entityplayer.getName().equalsIgnoreCase(gameprofile.getName())) {
@@ -385,6 +389,9 @@ public abstract class PlayerList {
 
         while (iterator.hasNext()) {
             entityplayer = (EntityPlayer) iterator.next();
+        */
+        if ((entityplayer = playerMap.get(gameprofile.getName().toLowerCase())) != null) {
+        // CraftBukkit end
             entityplayer.playerConnection.disconnect("You logged in from another location");
         }
 
@@ -848,6 +855,9 @@ public abstract class PlayerList {
     }
 
     public EntityPlayer getPlayer(String s) {
+        // CraftBukkit start
+        return playerMap.get(s.toLowerCase());
+        /*
         Iterator iterator = this.players.iterator();
 
         EntityPlayer entityplayer;
@@ -861,6 +871,8 @@ public abstract class PlayerList {
         } while (!entityplayer.getName().equalsIgnoreCase(s));
 
         return entityplayer;
+        */
+        // CraftBukkit end
     }
 
     public List a(ChunkCoordinates chunkcoordinates, int i, int j, int k, int l, int i1, int j1, Map map, String s, String s1, World world) {
