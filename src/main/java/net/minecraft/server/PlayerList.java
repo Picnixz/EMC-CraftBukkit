@@ -171,7 +171,7 @@ public abstract class PlayerList {
 
             if (entity != null) {
                 entity.n = true;
-                worldserver.addEntity(entity);
+                worldserver.addEntity(entity, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.FORCE); // EMC
                 entityplayer.mount(entity);
                 entity.n = false;
             }

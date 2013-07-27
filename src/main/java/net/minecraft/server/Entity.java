@@ -1894,7 +1894,7 @@ public abstract class Entity {
                     entity.setPositionRotation((double) chunkcoordinates.x, (double) chunkcoordinates.y, (double) chunkcoordinates.z, entity.yaw, entity.pitch);
                 }
                 // CraftBukkit end */
-                worldserver1.addEntity(entity);
+                worldserver1.addEntity(entity, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.FORCE); // EMC
                 // CraftBukkit start - Forward the CraftEntity to the new entity
                 this.getBukkitEntity().setHandle(entity);
                 entity.bukkitEntity = this.getBukkitEntity();
