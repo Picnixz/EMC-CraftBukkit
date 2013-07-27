@@ -1117,13 +1117,13 @@ public abstract class World implements IBlockAccess {
             }
         } // Spigot end
 
-        if (event != null && (event.isCancelled() || entity.dead)) {
+        if (spawnReason != SpawnReason.FORCE && event != null && (event.isCancelled() || entity.dead)) { // EMC
             entity.dead = true;
             return false;
         }
         // CraftBukkit end
 
-        if (!flag && !this.isChunkLoaded(i, j)) {
+        if (spawnReason != SpawnReason.FORCE && !flag && !this.isChunkLoaded(i, j)) { // EMC
             entity.dead = true; // CraftBukkit
             return false;
         } else {
