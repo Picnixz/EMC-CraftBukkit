@@ -1457,7 +1457,10 @@ public abstract class Entity {
         return this.bukkitEntity;
     }
 
+    VehicleExitEvent.DismountReason dismountReason = VehicleExitEvent.DismountReason.UNKNOWN; // EMC
     public void setPassengerOf(Entity entity) {
+        VehicleExitEvent.DismountReason reason = dismountReason; // EMC
+        dismountReason = VehicleExitEvent.DismountReason.UNKNOWN; // EMC
         // b(null) doesn't really fly for overloaded methods,
         // so this method is needed
 
@@ -1473,6 +1476,7 @@ public abstract class Entity {
                 // CraftBukkit start
                 if ((this.bukkitEntity instanceof LivingEntity) && (this.vehicle.getBukkitEntity() instanceof Vehicle)) {
                     VehicleExitEvent event = new VehicleExitEvent((Vehicle) this.vehicle.getBukkitEntity(), (LivingEntity) this.bukkitEntity);
+                    event.reason = reason; // EMC
                     pluginManager.callEvent(event);
 
                     if (event.isCancelled() || this.vehicle != originalVehicle) {
@@ -1494,6 +1498,7 @@ public abstract class Entity {
                 VehicleExitEvent exitEvent = null;
                 if (this.vehicle != null && this.vehicle.getBukkitEntity() instanceof Vehicle) {
                     exitEvent = new VehicleExitEvent((Vehicle) this.vehicle.getBukkitEntity(), (LivingEntity) this.bukkitEntity);
+                    exitEvent.reason = VehicleExitEvent.DismountReason.TRANSFER; // EMC
                     pluginManager.callEvent(exitEvent);
 
                     if (exitEvent.isCancelled() || this.vehicle != originalVehicle || (this.vehicle != null && this.vehicle.passenger != originalPassenger)) {

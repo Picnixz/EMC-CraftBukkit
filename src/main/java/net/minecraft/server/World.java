@@ -1162,10 +1162,12 @@ public abstract class World implements IBlockAccess {
 
     public void kill(Entity entity) {
         if (entity.passenger != null) {
+            entity.passenger.dismountReason = org.bukkit.event.vehicle.VehicleExitEvent.DismountReason.DEAD; // EMC
             entity.passenger.mount((Entity) null);
         }
 
         if (entity.vehicle != null) {
+            entity.dismountReason = org.bukkit.event.vehicle.VehicleExitEvent.DismountReason.DEAD; // EMC
             entity.mount((Entity) null);
         }
 
