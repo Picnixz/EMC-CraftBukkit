@@ -354,6 +354,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
 
     public void aa() {
         if (!this.world.isStatic && this.isSneaking()) {
+            this.dismountReason = org.bukkit.event.vehicle.VehicleExitEvent.DismountReason.PLAYER; // EMC
             this.mount((Entity) null);
             this.setSneaking(false);
         } else {
@@ -1051,6 +1052,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         }
 
         if (this.al()) {
+            this.dismountReason = org.bukkit.event.vehicle.VehicleExitEvent.DismountReason.PLAYER; // EMC
             this.mount((Entity) null);
         }
 

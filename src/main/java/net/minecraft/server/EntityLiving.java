@@ -191,6 +191,7 @@ public abstract class EntityLiving extends Entity {
             }
 
             if (!this.world.isStatic && this.al() && this.vehicle instanceof EntityLiving) {
+                this.dismountReason = org.bukkit.event.vehicle.VehicleExitEvent.DismountReason.WATER; // EMC
                 this.mount((Entity) null);
             }
         } else {
