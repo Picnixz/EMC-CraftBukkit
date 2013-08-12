@@ -3069,7 +3069,7 @@ public abstract class World implements IBlockAccess {
         if (this.isLoaded(i, j, k)) {
             float f1 = this.y();
 
-            f += MathHelper.a((float) this.getChunkAtWorldCoords(i, k).s / 3600000.0F, 0.0F, 1.0F) * (flag ? 1.0F : 0.75F);
+            f += MathHelper.a(/* remove inhabited time, not used.(float) this.getChunkAtWorldCoords(i, k).s / 3600000.0F*/ 0, 0.0F, 1.0F) * (flag ? 1.0F : 0.75F); // EMC
             f += f1 * 0.25F;
         }
 
