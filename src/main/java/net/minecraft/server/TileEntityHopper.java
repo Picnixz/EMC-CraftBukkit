@@ -3,7 +3,9 @@ package net.minecraft.server;
 import java.util.List;
 
 // CraftBukkit start
+import com.empireminecraft.customevents.HopperEvents;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -308,6 +310,8 @@ public class TileEntityHopper extends TileEntity implements IHopper {
         } else {
             int i = Facing.OPPOSITE_FACING[BlockHopper.b(this.p())];
 
+            int facing = BlockHopper.b(this.p()); // EMC
+            if (HopperEvents.fill(world.getWorld(), this.getOwner().getInventory(), x, y, z, (double) (this.x + Facing.b[facing]), (double) (this.y + Facing.c[facing]), (double) (this.z + Facing.d[facing]))) { return false; } // EMC
             if (this.a(iinventory, i)) {
                 return false;
             } else {
@@ -412,7 +416,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
             if (b(iinventory, b0)) {
                 return false;
             }
-
+            if (HopperEvents.drain(ihopper.getWorld().getWorld(), new CraftInventory(ihopper), ihopper.x(), ihopper.aD(), ihopper.aE())) { return false; } // EMC
             if (iinventory instanceof IWorldInventory && b0 > -1) {
                 IWorldInventory iworldinventory = (IWorldInventory) iinventory;
                 int[] aint = iworldinventory.getSlotsForFace(b0);
