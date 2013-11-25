@@ -574,6 +574,7 @@ public final class ItemStack {
     }
 
     public void setRepairCost(int i) {
+        if (true) return; // EMC
         if (!this.hasTag()) {
             this.tag = new NBTTagCompound();
         }
