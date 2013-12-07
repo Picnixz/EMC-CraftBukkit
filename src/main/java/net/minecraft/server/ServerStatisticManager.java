@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import com.empireminecraft.customevents.AchievementBroadcastEvent;
 import net.minecraft.util.com.google.common.collect.Maps;
 import net.minecraft.util.com.google.common.collect.Sets;
 import net.minecraft.util.com.google.gson.JsonElement;
@@ -19,6 +20,8 @@ import net.minecraft.util.com.google.gson.JsonParser;
 import net.minecraft.util.org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.entity.Player;
 
 public class ServerStatisticManager extends StatisticManager {
 
@@ -73,7 +76,16 @@ public class ServerStatisticManager extends StatisticManager {
         if (statistic.d() && j == 0 && i > 0) {
             this.g = true;
             if (this.c.at()) {
-                this.c.getPlayerList().sendMessage(new ChatMessage("chat.type.achievement", new Object[] { entityhuman.getScoreboardDisplayName(), statistic.j()}));
+                // EMC start
+                ChatMessage achv = new ChatMessage("chat.type.achievement", new Object[] { entityhuman.getScoreboardDisplayName(), statistic.j()});
+                com.empireminecraft.customevents.AchievementBroadcastEvent event = new AchievementBroadcastEvent(
+                    (Player) entityhuman.getBukkitEntity());
+                event.callEvent();
+                for (Player player : event.getReceivers()) {
+                    ((CraftPlayer) player).getHandle().sendMessage(achv);
+                }
+                //this.c.getPlayerList().sendMessage(new ChatMessage("chat.type.achievement", new Object[] { entityhuman.getScoreboardDisplayName(), statistic.j()}));
+                // EMC end
             }
         }
     }
