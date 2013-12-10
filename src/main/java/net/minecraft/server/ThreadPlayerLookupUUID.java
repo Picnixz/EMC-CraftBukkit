@@ -26,7 +26,7 @@ class ThreadPlayerLookupUUID extends Thread {
 
         try {
             // Spigot Start
-            if ( !LoginListener.c( this.a ).getOnlineMode() )
+            if ( a.networkManager.isProxied || !LoginListener.c( this.a ).getOnlineMode() )
             {
                 a.initUUID();
                 fireLoginEvents();

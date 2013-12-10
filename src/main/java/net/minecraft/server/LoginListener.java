@@ -122,6 +122,12 @@ public class LoginListener implements PacketLoginInListener {
     public void a(PacketLoginInStart packetlogininstart) {
         Validate.validState(this.g == EnumProtocolState.HELLO, "Unexpected hello packet", new Object[0]);
         this.i = packetlogininstart.c();
+        // Spigot start - handle Bungee
+        if (this.networkManager.isProxied && !this.networkManager.c()) {
+            new ThreadPlayerLookupUUID(this, "User Authenticator #" + b.incrementAndGet()).start();
+            return;
+        }
+        // Spigot end
         if (this.server.getOnlineMode() && !this.networkManager.c()) {
             this.g = EnumProtocolState.KEY;
             this.networkManager.handle(new PacketLoginOutEncryptionBegin(this.j, this.server.K().getPublic(), this.e), new GenericFutureListener[0]);
