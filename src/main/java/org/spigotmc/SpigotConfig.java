@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -223,6 +224,7 @@ public class SpigotConfig
     }
 
     public static boolean bungee;
+    public static List<String> bungeeAddresses = Collections.singletonList("127.0.0.1");
     private static void bungee() {
         if ( version < 4 )
         {
@@ -230,6 +232,7 @@ public class SpigotConfig
             System.out.println( "Oudated config, disabling BungeeCord support!" );
         }
         bungee = getBoolean( "settings.bungeecord", false );
+        bungeeAddresses = getList("settings.bungeecord-addresses", bungeeAddresses);
     }
 
     private static void nettyThreads()

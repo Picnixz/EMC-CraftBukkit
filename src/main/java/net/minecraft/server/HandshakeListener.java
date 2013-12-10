@@ -83,7 +83,10 @@ public class HandshakeListener implements PacketHandshakingInListener {
             } else {
                 this.b.a((PacketListener) (new LoginListener(this.a, this.b)));
                 // Spigot Start
-                if (org.spigotmc.SpigotConfig.bungee) {
+                String ip = ((java.net.InetSocketAddress) this.b.getSocketAddress()).getAddress().getHostAddress();
+                if (org.spigotmc.SpigotConfig.bungee &&
+                    org.spigotmc.SpigotConfig.bungeeAddresses.contains(ip)) {
+                    b.isProxied = true;
                     String[] split = packethandshakinginsetprotocol.b.split("\00");
                     if ( split.length == 3 || split.length == 4 ) {
                         packethandshakinginsetprotocol.b = split[0];
