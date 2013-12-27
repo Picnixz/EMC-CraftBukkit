@@ -2,6 +2,7 @@ package net.minecraft.server;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -20,8 +21,10 @@ public class NBTTagList extends NBTBase {
             this.type = 0;
         }
 
+        try { // EMC
         dataoutput.writeByte(this.type);
         dataoutput.writeInt(this.list.size());
+        } catch (IOException e) {e.printStackTrace();} // EMC
 
         for (int i = 0; i < this.list.size(); ++i) {
             ((NBTBase) this.list.get(i)).write(dataoutput);
@@ -33,8 +36,10 @@ public class NBTTagList extends NBTBase {
             throw new RuntimeException("Tried to read NBT tag with too high complexity, depth > 512");
         } else {
             nbtreadlimiter.a(8L);
+            try { // EMC
             this.type = datainput.readByte();
             int j = datainput.readInt();
+
 
             this.list = new ArrayList();
 
@@ -44,6 +49,7 @@ public class NBTTagList extends NBTBase {
                 nbtbase.load(datainput, i + 1, nbtreadlimiter);
                 this.list.add(nbtbase);
             }
+            } catch (IOException e) {e.printStackTrace();} // EMC
         }
     }
 
