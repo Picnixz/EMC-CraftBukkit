@@ -1107,6 +1107,7 @@ public abstract class Entity {
 
     public boolean serializeEntity(NBTTagCompound cmp) { Entity pass = passenger; passenger = null;boolean res = d(cmp); passenger = pass; return res; } // EMC
     public boolean d(NBTTagCompound nbttagcompound) {
+        if (this instanceof EntityFireworks) return false; // EMC
         String s = this.V();
 
         if (!this.dead && s != null && this.passenger == null) {
