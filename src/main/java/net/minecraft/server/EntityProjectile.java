@@ -233,6 +233,7 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
         this.inBlockId = Block.e(nbttagcompound.getByte("inTile") & 255);
         this.shake = nbttagcompound.getByte("shake") & 255;
         this.inGround = nbttagcompound.getByte("inGround") == 1;
+        if (this instanceof EntityEnderPearl) return; // EMC - Chunk reloads should not keep owner
         this.shooterName = nbttagcompound.getString("ownerName");
         if (this.shooterName != null && this.shooterName.length() == 0) {
             this.shooterName = null;
