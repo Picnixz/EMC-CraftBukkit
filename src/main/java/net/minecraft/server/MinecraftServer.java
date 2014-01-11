@@ -1216,7 +1216,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     public boolean getSnooperEnabled() {
-        return true;
+        return false; // EMC
     }
 
     public abstract boolean X();
