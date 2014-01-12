@@ -251,6 +251,7 @@ public abstract class World implements IBlockAccess {
 
         this.worldProvider.a(this);
         this.chunkProvider = this.j();
+        timings = new SpigotTimings.WorldTimingsHandler(this); // Spigot - code below can generate new world and access timings
         if (!this.worldData.isInitialized()) {
             try {
                 this.a(worldsettings);
@@ -283,7 +284,6 @@ public abstract class World implements IBlockAccess {
         this.a();
 
         this.getServer().addWorld(this.world); // CraftBukkit
-        timings = new SpigotTimings.WorldTimingsHandler(this); // Spigot
     }
 
     protected abstract IChunkProvider j();

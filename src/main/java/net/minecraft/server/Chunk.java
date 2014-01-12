@@ -916,6 +916,7 @@ public class Chunk {
     }
 
     public void a(IChunkProvider ichunkprovider, IChunkProvider ichunkprovider1, int i, int j) {
+        world.timings.syncChunkLoadPostTimer.startTiming(); // Spigot
         if (!this.done && ichunkprovider.isChunkLoaded(i + 1, j + 1) && ichunkprovider.isChunkLoaded(i, j + 1) && ichunkprovider.isChunkLoaded(i + 1, j)) {
             ichunkprovider.getChunkAt(ichunkprovider1, i, j);
         }
@@ -931,6 +932,7 @@ public class Chunk {
         if (ichunkprovider.isChunkLoaded(i - 1, j - 1) && !ichunkprovider.getOrCreateChunk(i - 1, j - 1).done && ichunkprovider.isChunkLoaded(i, j - 1) && ichunkprovider.isChunkLoaded(i - 1, j)) {
             ichunkprovider.getChunkAt(ichunkprovider1, i - 1, j - 1);
         }
+        world.timings.syncChunkLoadPostTimer.stopTiming(); // Spigot
     }
 
     public int d(int i, int j) {
