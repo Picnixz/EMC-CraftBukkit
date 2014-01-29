@@ -33,7 +33,7 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
         for (char c : ingredientMap.keySet()) {
             ItemStack stack = ingredientMap.get(c);
             if (stack != null) {
-                ret.setIngredient(c, stack.getType(), stack.getDurability());
+                ret.setIngredient(c, stack); // EMC
             }
         }
         return ret;
@@ -57,7 +57,8 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
             i++;
             int id = mdata.getTypeId();
             short dmg = mdata.getDurability();
-            data[i] = new net.minecraft.server.ItemStack(CraftMagicNumbers.getItem(id), 1, dmg);
+            //data[i] = new net.minecraft.server.ItemStack(CraftMagicNumbers.getItem(id), 1, dmg); // EMC
+            data[i] = CraftItemStack.asNMSCopy(mdata); // EMC
             i++;
         }
         CraftingManager.getInstance().registerShapedRecipe(CraftItemStack.asNMSCopy(this.getResult()), data);

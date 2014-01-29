@@ -28,7 +28,7 @@ public class CraftShapelessRecipe extends ShapelessRecipe implements CraftRecipe
         }
         CraftShapelessRecipe ret = new CraftShapelessRecipe(recipe.getResult());
         for (ItemStack ingred : recipe.getIngredientList()) {
-            ret.addIngredient(ingred.getType(), ingred.getDurability());
+            ret.addIngredient(ingred); // EMC
         }
         return ret;
     }
@@ -40,7 +40,8 @@ public class CraftShapelessRecipe extends ShapelessRecipe implements CraftRecipe
         for (ItemStack mdata : ingred) {
             int id = mdata.getTypeId();
             short dmg = mdata.getDurability();
-            data[i] = new net.minecraft.server.ItemStack(CraftMagicNumbers.getItem(id), 1, dmg);
+            //data[i] = new net.minecraft.server.ItemStack(CraftMagicNumbers.getItem(id), 1, dmg); // EMC
+            data[i] = CraftItemStack.asNMSCopy(mdata); // EMC
             i++;
         }
         CraftingManager.getInstance().registerShapelessRecipe(CraftItemStack.asNMSCopy(this.getResult()), data);

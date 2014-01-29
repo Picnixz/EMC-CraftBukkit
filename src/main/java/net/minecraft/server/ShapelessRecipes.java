@@ -26,7 +26,8 @@ public class ShapelessRecipes implements IRecipe {
         CraftShapelessRecipe recipe = new CraftShapelessRecipe(result, this);
         for (ItemStack stack : (List<ItemStack>) this.ingredients) {
             if (stack != null) {
-                recipe.addIngredient(org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(stack.getItem()), stack.getData());
+                //recipe.addIngredient(org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(stack.getItem()), stack.getData()); // EMC
+                recipe.addIngredient(stack.getBukkitStack()); // EMC
             }
         }
         return recipe;
@@ -48,9 +49,11 @@ public class ShapelessRecipes implements IRecipe {
                     boolean flag = false;
                     Iterator iterator = arraylist.iterator();
 
+                    org.bukkit.inventory.ItemStack bukkitStack = itemstack.getBukkitStack(); // EMC
                     while (iterator.hasNext()) {
                         ItemStack itemstack1 = (ItemStack) iterator.next();
 
+                        if (!bukkitStack.isSimilar(itemstack1.getBukkitStack(), itemstack1.getData() == 32767)) { continue; } // EMC - 32767 is some magic code for "don't care what the durability of the block is"
                         if (itemstack.getItem() == itemstack1.getItem() && (itemstack1.getData() == 32767 || itemstack.getData() == itemstack1.getData())) {
                             flag = true;
                             arraylist.remove(itemstack1);
