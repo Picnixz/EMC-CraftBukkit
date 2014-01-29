@@ -19,7 +19,15 @@ import org.bukkit.event.world.StructureGrowEvent;
 // CraftBukkit end
 
 public final class ItemStack {
-
+    // EMC start
+    org.bukkit.inventory.ItemStack bukkitStack = null;
+    public org.bukkit.inventory.ItemStack getBukkitStack() {
+        if (bukkitStack == null) {
+            bukkitStack = org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(this);
+        }
+        return bukkitStack;
+    }
+    // EMC emd
     public static final DecimalFormat a = new DecimalFormat("#.###");
     public int count;
     public int c;

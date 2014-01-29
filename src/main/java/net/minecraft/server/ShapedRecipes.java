@@ -68,7 +68,8 @@ public class ShapedRecipes implements IRecipe {
         char c = 'a';
         for (ItemStack stack : this.items) {
             if (stack != null) {
-                recipe.setIngredient(c, org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(stack.getItem()), stack.getData());
+                //recipe.setIngredient(c, org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(stack.getItem()), stack.getData()); // EMC
+                recipe.setIngredient(c, stack.getBukkitStack()); // EMC
             }
             c++;
         }
@@ -125,6 +126,12 @@ public class ShapedRecipes implements IRecipe {
                     if (itemstack.getData() != 32767 && itemstack.getData() != itemstack1.getData()) {
                         return false;
                     }
+                    // EMC start
+                    // 32767 is some magic code for "don't care what the durability of the block is"
+                    if (!itemstack.getBukkitStack().isSimilar(itemstack1.getBukkitStack(), itemstack.getData() == 32767)) {
+                        return false;
+                    }
+                    // EMC end
                 }
             }
         }
