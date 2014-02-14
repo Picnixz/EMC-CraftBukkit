@@ -1244,7 +1244,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     public boolean getPvP() {
-        return this.pvpMode;
+        return true; // EMC
     }
 
     public void setPvP(boolean flag) {

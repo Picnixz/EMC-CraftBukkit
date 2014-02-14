@@ -788,7 +788,7 @@ public class CraftWorld implements World {
     }
 
     public void setPVP(boolean pvp) {
-        world.pvpMode = pvp;
+        world.pvpMode = true; // EMC
     }
 
     public void playEffect(Player player, Effect effect, int data) {
