@@ -541,6 +541,14 @@ public abstract class EntityLiving extends Entity {
     }
 
     public void addEffect(MobEffect mobeffect) {
+        // EMC start
+        com.empireminecraft.customevents.EntityEffectAddedEvent event = new com.empireminecraft.customevents.EntityEffectAddedEvent(this, mobeffect);
+        if (!event.callEvent()) {
+            return;
+        }
+        final org.bukkit.potion.PotionEffect effect = event.getEffect();
+        mobeffect = new MobEffect(effect.getType().getId(), effect.getDuration(), effect.getAmplifier(), effect.isAmbient());
+        // EMC end
         if (this.d(mobeffect)) {
             if (this.effects.containsKey(Integer.valueOf(mobeffect.getEffectId()))) {
                 ((MobEffect) this.effects.get(Integer.valueOf(mobeffect.getEffectId()))).a(mobeffect);
