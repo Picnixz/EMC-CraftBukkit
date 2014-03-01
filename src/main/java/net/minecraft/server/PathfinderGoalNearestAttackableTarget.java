@@ -39,7 +39,19 @@ public class PathfinderGoalNearestAttackableTarget extends PathfinderGoalTarget 
             if (list.isEmpty()) {
                 return false;
             } else {
-                this.g = (EntityLiving) list.get(0);
+                // EMC start
+                for (EntityLiving entity : ((List<EntityLiving>) list)) {
+                    if (org.bukkit.craftbukkit.event.CraftEventFactory
+                        .callEntityTargetLivingEvent(
+                            this.c,
+                            entity,
+                            org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER).isCancelled()) {
+                        continue;
+                    }
+                    this.g = entity;
+                    break;
+                }
+                // EMC end
                 return true;
             }
         }
