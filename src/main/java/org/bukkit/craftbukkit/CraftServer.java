@@ -345,7 +345,7 @@ public final class CraftServer implements Server {
         }
         String lowerName = name.toLowerCase();
         int delta = Integer.MAX_VALUE;
-        for (EntityPlayer entityPlayer : (List<EntityPlayer>)playerList.players) {
+        for (EntityPlayer entityPlayer : (List<EntityPlayer>) playerList.players) {
             Player player = entityPlayer.playerConnection.getPlayer();
             if (player.getName().toLowerCase().startsWith(lowerName)) {
                 int curDelta = player.getName().length() - lowerName.length();
