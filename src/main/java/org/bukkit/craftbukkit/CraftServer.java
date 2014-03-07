@@ -378,7 +378,7 @@ public final class CraftServer implements Server {
 
         List<Player> matchedPlayers = new ArrayList<Player>();
 
-        for (EntityPlayer entityPlayer : (List<EntityPlayer>)playerList.players) {
+        for (EntityPlayer entityPlayer : (List<EntityPlayer>) playerList.players) {
             Player iterPlayer = entityPlayer.playerConnection.getPlayer();
             String iterPlayerName = iterPlayer.getName();
 
@@ -1273,7 +1273,7 @@ public final class CraftServer implements Server {
     public void sendPluginMessage(Plugin source, String channel, byte[] message) {
         StandardMessenger.validatePluginMessage(getMessenger(), source, channel, message);
 
-        for (EntityPlayer entityPlayer : (List<EntityPlayer>)playerList.players) {
+        for (EntityPlayer entityPlayer : (List<EntityPlayer>) playerList.players) {
             Player player = entityPlayer.playerConnection.getPlayer();
             player.sendPluginMessage(source, channel, message);
         }
@@ -1282,7 +1282,7 @@ public final class CraftServer implements Server {
     public Set<String> getListeningPluginChannels() {
         Set<String> result = new HashSet<String>();
 
-        for (EntityPlayer entityPlayer : (List<EntityPlayer>)playerList.players) {
+        for (EntityPlayer entityPlayer : (List<EntityPlayer>) playerList.players) {
             Player player = entityPlayer.playerConnection.getPlayer();
             result.addAll(player.getListeningPluginChannels());
         }
@@ -1380,7 +1380,7 @@ public final class CraftServer implements Server {
         List<String> completions = new ArrayList<String>();
         PlayerChatTabCompleteEvent event = new PlayerChatTabCompleteEvent(player, message, completions);
         String token = event.getLastToken();
-        for (EntityPlayer entityPlayer : (List<EntityPlayer>)playerList.players) {
+        for (EntityPlayer entityPlayer : (List<EntityPlayer>) playerList.players) {
             Player p = entityPlayer.playerConnection.getPlayer();
             if (player.canSee(p) && StringUtil.startsWithIgnoreCase(p.getName(), token)) {
                 completions.add(p.getName());
