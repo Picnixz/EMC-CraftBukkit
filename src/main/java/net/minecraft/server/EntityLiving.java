@@ -17,6 +17,7 @@ import org.bukkit.event.entity.EntityRegainHealthEvent;
 // CraftBukkit end
 
 import org.bukkit.craftbukkit.SpigotTimings; // Spigot
+import com.empireminecraft.customevents.LivingEntityArmorProtectEvent; // EMC
 
 public abstract class EntityLiving extends Entity {
 
@@ -927,6 +928,11 @@ public abstract class EntityLiving extends Entity {
     protected float applyArmorModifier(DamageSource damagesource, float f) {
         if (!damagesource.ignoresArmor()) {
             int i = 25 - this.aV();
+            // EMC start
+            LivingEntityArmorProtectEvent event = new LivingEntityArmorProtectEvent(damagesource, this, f, 25 - i);
+            event.callEvent();
+            if (true) return f * event.getArmorProtectionPct();
+            // EMC end
             float f1 = f * (float) i;
 
             // this.damageArmor(f); // CraftBukkit - Moved into d(DamageSource, float)
