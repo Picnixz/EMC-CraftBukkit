@@ -9,6 +9,7 @@ import java.util.UUID;
 
 // CraftBukkit start
 import java.util.ArrayList;
+import com.empireminecraft.customevents.LivingEntityArmorProtectEvent; // EMC
 import org.bukkit.craftbukkit.SpigotTimings;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -924,11 +925,20 @@ public abstract class EntityLiving extends Entity {
 
     protected float b(DamageSource damagesource, float f) {
         if (!damagesource.ignoresArmor()) {
+            // EMC start - implement own logic.
+            // this.aU(); = Armor Value - 2 above this method
+            LivingEntityArmorProtectEvent event = new LivingEntityArmorProtectEvent(damagesource, this, f, this.aU());
+            if (!event.callEvent()) {
+                return f;
+            }
+            f *= event.getArmorProtectionPct();
+            /*
             int i = 25 - this.aU();
             float f1 = f * (float) i;
 
             // this.h(f); // CraftBukkit - Moved into d(DamageSource, float)
             f = f1 / 25.0F;
+            */ // EMC end
         }
 
         return f;
