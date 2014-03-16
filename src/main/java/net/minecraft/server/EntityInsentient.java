@@ -5,9 +5,12 @@ import java.util.List;
 import java.util.UUID;
 
 // CraftBukkit start
+import com.empireminecraft.customevents.GetArmorProtectionValueEvent;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.entity.EntityUnleashEvent;
 import org.bukkit.event.entity.EntityUnleashEvent.UnleashReason;
+
+import static com.empireminecraft.customevents.GetArmorProtectionValueEvent.GetArmorProtectionValue;
 // CraftBukkit end
 
 public abstract class EntityInsentient extends EntityLiving {
@@ -329,10 +332,10 @@ public abstract class EntityInsentient extends EntityLiving {
                                 ItemArmor itemarmor = (ItemArmor) itemstack.getItem();
                                 ItemArmor itemarmor1 = (ItemArmor) itemstack1.getItem();
 
-                                if (itemarmor.c == itemarmor1.c) {
+                                if (GetArmorProtectionValue(itemstack, itemarmor.c) == GetArmorProtectionValue(itemstack1, itemarmor1.c)) { // EMC
                                     flag = itemstack.getData() > itemstack1.getData() || itemstack.hasTag() && !itemstack1.hasTag();
                                 } else {
-                                    flag = itemarmor.c > itemarmor1.c;
+                                    flag = GetArmorProtectionValue(itemstack, itemarmor.c) > GetArmorProtectionValue(itemstack1, itemarmor1.c); // EMC
                                 }
                             } else {
                                 flag = false;
