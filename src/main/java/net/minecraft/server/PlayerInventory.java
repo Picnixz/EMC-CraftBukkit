@@ -5,8 +5,11 @@ import java.util.concurrent.Callable;
 // CraftBukkit start
 import java.util.List;
 
+import com.empireminecraft.customevents.GetArmorProtectionValueEvent;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.HumanEntity;
+
+import static com.empireminecraft.customevents.GetArmorProtectionValueEvent.GetArmorProtectionValue;
 // CraftBukkit end
 
 public class PlayerInventory implements IInventory {
@@ -433,7 +436,7 @@ public class PlayerInventory implements IInventory {
 
         for (int j = 0; j < this.armor.length; ++j) {
             if (this.armor[j] != null && this.armor[j].getItem() instanceof ItemArmor) {
-                int k = ((ItemArmor) this.armor[j].getItem()).c;
+                int k = GetArmorProtectionValue(this.armor[j], ((ItemArmor) this.armor[j].getItem()).c); // EMC
 
                 i += k;
             }

@@ -15,6 +15,8 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
+
+import static com.empireminecraft.customevents.GetArmorProtectionValueEvent.GetArmorProtectionValue;
 // CraftBukkit end
 
 public abstract class EntityLiving extends Entity {
@@ -912,7 +914,7 @@ public abstract class EntityLiving extends Entity {
             ItemStack itemstack = aitemstack[k];
 
             if (itemstack != null && itemstack.getItem() instanceof ItemArmor) {
-                int l = ((ItemArmor) itemstack.getItem()).c;
+                int l = GetArmorProtectionValue(itemstack, ((ItemArmor) itemstack.getItem()).c); // EMC
 
                 i += l;
             }
