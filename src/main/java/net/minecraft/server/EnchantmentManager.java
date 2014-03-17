@@ -1,5 +1,8 @@
 package net.minecraft.server;
 
+import com.empireminecraft.customevents.EntityKnockbackEvent;
+import org.bukkit.entity.LivingEntity;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -170,7 +173,12 @@ public class EnchantmentManager {
     }
 
     public static int getKnockbackEnchantmentLevel(EntityLiving entityliving, EntityLiving entityliving1) {
-        return getEnchantmentLevel(Enchantment.KNOCKBACK.id, entityliving.be());
+        // EMC start
+        int level = getEnchantmentLevel(Enchantment.KNOCKBACK.id, entityliving.be());
+        EntityKnockbackEvent event = new EntityKnockbackEvent((LivingEntity) entityliving.getBukkitEntity(), (LivingEntity) entityliving1.getBukkitEntity(), level);
+        event.callEvent();
+        return event.getLevel();
+        // EMC end
     }
 
     public static int getFireAspectEnchantmentLevel(EntityLiving entityliving) {
