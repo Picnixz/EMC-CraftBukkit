@@ -6,6 +6,7 @@ import java.util.UUID;
 
 
 //CraftBukkit start
+import com.empireminecraft.customevents.ZombieReinforcementEvent;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
@@ -174,7 +175,19 @@ public class EntityZombie extends EntityMonster {
                 entityliving = (EntityLiving) damagesource.getEntity();
             }
 
-            if (entityliving != null && this.world.difficulty == EnumDifficulty.HARD && (double) this.random.nextFloat() < this.getAttributeInstance(bp).getValue()) {
+            // EMC start
+            boolean spawnReinforcements = false;
+            if (entityliving != null) {
+                final double chance = this.getAttributeInstance(bp).getValue();
+                ZombieReinforcementEvent event = new ZombieReinforcementEvent(
+                    this.getBukkitEntity(),
+                    entityliving.getBukkitEntity(), chance);
+                if (event.callEvent()) {
+                    spawnReinforcements = this.random.nextFloat() < event.getChance();
+                }
+            }
+            if (spawnReinforcements) {
+            // EMC end
                 int i = MathHelper.floor(this.locX);
                 int j = MathHelper.floor(this.locY);
                 int k = MathHelper.floor(this.locZ);
