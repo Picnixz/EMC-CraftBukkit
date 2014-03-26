@@ -1852,6 +1852,15 @@ public final class CraftServer implements Server {
         {
             return org.spigotmc.SpigotConfig.config;
         }
+
+        @Override
+        public double[] getTPS() {
+            return new double[]{
+                MinecraftServer.getServer().tps1.getAverage(),
+                MinecraftServer.getServer().tps5.getAverage(),
+                MinecraftServer.getServer().tps15.getAverage()
+            };
+        }
     };
 
     public Spigot spigot()

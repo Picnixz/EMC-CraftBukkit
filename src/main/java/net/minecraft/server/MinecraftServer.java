@@ -102,18 +102,11 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public org.bukkit.command.ConsoleCommandSender console;
     public org.bukkit.command.RemoteConsoleCommandSender remoteConsole;
     public ConsoleReader reader;
-    public static int currentTick = (int) (System.currentTimeMillis() / 50);
+    public static int currentTick = 0; // Spigot
     public final Thread primaryThread;
     public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
     public int autosavePeriod;
     // CraftBukkit end
-    // Spigot start
-    private static final int TPS = 20;
-    private static final int TICK_TIME = 1000000000 / TPS;
-    private static final long MAX_CATCHUP_BUFFER = TICK_TIME * TPS * 60L;
-    private static final int SAMPLE_INTERVAL = 100;
-    public final double[] recentTps = new double[ 3 ];
-    // Spigot end
 
     public MinecraftServer(OptionSet options, Proxy proxy) { // CraftBukkit - signature file -> OptionSet
         net.minecraft.util.io.netty.util.ResourceLeakDetector.setEnabled( false ); // Spigot - disable
@@ -450,12 +443,53 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     // Spigot Start
-    private static double calcTps(double avg, double exp, double tps)
-    {
-        return ( avg * exp ) + ( tps * ( 1 - exp ) );
+    private static final int TPS = 20;
+    private static final long SEC_IN_NANO = 1000000000;
+    private static final long TICK_TIME = SEC_IN_NANO / TPS;
+    private static final long MAX_CATCHUP_BUFFER = TICK_TIME * TPS * 60L;
+    private static final int SAMPLE_INTERVAL = 20;
+    public final RollingAverage tps1 = new RollingAverage(60);
+    public final RollingAverage tps5 = new RollingAverage(60*5);
+    public final RollingAverage tps15 = new RollingAverage(60*15);
+
+    public static class RollingAverage {
+        private final int size;
+        private long time;
+        private double total;
+        private int index = 0;
+        private final double[] samples;
+        private final long[] times;
+
+        RollingAverage(int size) {
+            this.size = size;
+            this.time = size * SEC_IN_NANO;
+            this.total = TPS * SEC_IN_NANO * size;
+            this.samples = new double[size];
+            this.times = new long[size];
+            for (int i = 0; i < size; i++) {
+                this.samples[i] = TPS;
+                this.times[i] = SEC_IN_NANO;
+            }
+        }
+
+        public void add(double x, long t) {
+            time -= times[index];
+            total -= samples[index]*times[index];
+            samples[index] = x;
+            times[index] = t;
+            time += t;
+            total += x*t;
+            if (++index == size) {
+                index = 0;
+            }
+        }
+
+        public double getAverage() {
+            return total / time;
+        }
     }
     // Spigot End
- 
+
     public void run() {
         try {
             if (this.init()) {
@@ -490,12 +524,13 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
                     catchupTime = Math.min(MAX_CATCHUP_BUFFER, catchupTime - wait);
 
-                    if ( MinecraftServer.currentTick++ % SAMPLE_INTERVAL == 0 )
+                    if ( ++MinecraftServer.currentTick % SAMPLE_INTERVAL == 0 )
                     {
-                        double currentTps = 1E9 / ( curTime - tickSection ) * SAMPLE_INTERVAL;
-                        recentTps[0] = calcTps( recentTps[0], 0.92, currentTps ); // 1/exp(5sec/1min)
-                        recentTps[1] = calcTps( recentTps[1], 0.9835, currentTps ); // 1/exp(5sec/5min)
-                        recentTps[2] = calcTps( recentTps[2], 0.9945, currentTps ); // 1/exp(5sec/15min)
+                        final long diff = curTime - tickSection;
+                        double currentTps = 1E9 / diff * SAMPLE_INTERVAL;
+                        tps1.add(currentTps, diff);
+                        tps5.add(currentTps, diff);
+                        tps15.add(currentTps, diff);
                         tickSection = curTime;
                     }
                     lastTick = curTime;
