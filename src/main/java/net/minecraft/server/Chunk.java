@@ -894,7 +894,8 @@ public class Chunk {
             for (int l = 0; l < list1.size(); ++l) {
                 Entity entity = (Entity) list1.get(l);
 
-                if (oclass.isAssignableFrom(entity.getClass()) && entity.boundingBox.b(axisalignedbb) && (ientityselector == null || ientityselector.a(entity))) {
+                if ((oclass == null || oclass.isAssignableFrom(entity.getClass())) // EMC
+                    && entity.boundingBox.b(axisalignedbb) && (ientityselector == null || ientityselector.a(entity))) {
                     list.add(entity);
                 }
             }
