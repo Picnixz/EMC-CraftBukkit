@@ -85,6 +85,37 @@ public class CraftWorld implements World {
         return getChunkAt(x >> 4, z >> 4).getBlock(x & 0xF, y & 0xFF, z & 0xF);
     }
 
+    // EMC start
+    public Collection<Entity> getNearbyEntities(Location loc, int x, int y, int z) {
+        return getNearbyEntitiesByType(null, loc, x, y, z);
+    }
+    public Collection<LivingEntity> getNearbyLivingEntities(Location loc, int x, int y, int z) {
+        return getNearbyEntitiesByType(org.bukkit.entity.LivingEntity.class, loc, x, y, z);
+    }
+    public Collection<Player> getNearbyPlayers(Location loc, int x, int y, int z) {
+        return getNearbyEntitiesByType(org.bukkit.entity.Player.class, loc, x, y, z);
+    }
+    public <T> Collection<T> getNearbyEntitiesByType(Class<? extends T> clazz, Location loc, int x, int y, int z) {
+        final double lx = loc.getX();
+        final double ly = loc.getY();
+        final double lz = loc.getZ();
+        final AxisAlignedBB aabb = AxisAlignedBB.a(lx, ly, lz, lx, ly, lz).a(x,y,z);
+
+        final List<net.minecraft.server.Entity> notchEntityList = ((CraftWorld) loc.getWorld()).getHandle().a(null, aabb, (IEntitySelector) null);
+        List<T> bukkitEntityList = new java.util.ArrayList<T>(notchEntityList.size());
+
+        for (net.minecraft.server.Entity e : notchEntityList) {
+            CraftEntity bukkitEntity = e.getBukkitEntity();
+            do {
+                if (clazz == null || clazz.isAssignableFrom(bukkitEntity.getClass())) {
+                    bukkitEntityList.add((T) bukkitEntity);
+                }
+            } while ((bukkitEntity = (CraftEntity) bukkitEntity.getPassenger()) != null);
+        }
+        return bukkitEntityList;
+    }
+    // EMC end
+
     public int getBlockTypeIdAt(int x, int y, int z) {
         return world.getTypeId(x, y, z);
     }
