@@ -373,6 +373,11 @@ public class CraftWorld implements World {
         return (LivingEntity) spawnEntity(loc, creatureType);
     }
 
+    // EMC start
+    public Entity spawnEntity(Location loc, EntityType type, SpawnReason reason) {
+        return spawn(loc, type.getEntityClass(), reason);
+    }
+    // EMC end
     public Entity spawnEntity(Location loc, EntityType entityType) {
         return spawn(loc, entityType.getEntityClass());
     }
