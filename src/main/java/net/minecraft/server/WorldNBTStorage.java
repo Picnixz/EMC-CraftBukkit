@@ -201,6 +201,13 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
 
         try {
             File file1 = new File(this.playerDir, entityhuman.getUniqueID().toString() + ".dat");
+            // EMC start
+            File fileold = new File(this.baseDir, "players/" + entityhuman.getName() + ".dat");
+            if (!file1.exists() && fileold.exists() && fileold.isFile()) {
+                fileold.renameTo(file1);
+                System.out.println("Converting " + entityhuman.getName() + " to UUID storage");
+            }
+            // EMC end
             // Spigot Start
             boolean usingWrongFile = false;
             if ( !file1.exists() )

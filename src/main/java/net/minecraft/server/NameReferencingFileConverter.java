@@ -347,6 +347,7 @@ public class NameReferencingFileConverter {
     }
 
     private static boolean c(PropertyManager propertymanager) {
+        if (true) return true; // EMC
         File file1 = d(propertymanager);
 
         if (file1.exists() && file1.isDirectory()) {

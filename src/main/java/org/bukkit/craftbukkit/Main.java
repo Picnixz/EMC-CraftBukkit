@@ -24,7 +24,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         // Spigot Start
         File lock = new File( ".update-lock" );
-        if ( !new File( "update-lock" ).exists() && !lock.exists()  && System.getProperty( "IReallyKnowWhatIAmDoingThisUpdate" ) == null )
+        if ( !new File( "update-lock" ).exists() && !lock.exists()  && System.getProperty( "IReallyKnowWhatIAmDoingThisUpdate") == null && false) // E<C
         {
             System.err.println( "WARNING: This Minecraft update alters the way in which saved data is stored." );
             System.err.println( "Please ensure your server is in the correct online/offline mode state, as the changes made are PERMANENT" );
