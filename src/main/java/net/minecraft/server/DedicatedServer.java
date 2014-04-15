@@ -468,7 +468,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             flag3 = NameReferencingFileConverter.d((MinecraftServer) this);
         }
 
-        boolean flag4 = false;
+        boolean flag4 = true; // EMC - Disable Full Player data conversion, it will happen on login.
 
         for (i = 0; !flag4 && i <= 2; ++i) {
             if (i > 0) {
@@ -477,7 +477,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
                 this.aG();
             }
 
-            flag4 = NameReferencingFileConverter.a(this, this.propertyManager);
+            // flag4 = NameReferencingFileConverter.a(this, this.propertyManager); // EMC - Disable Full Player data conversion, it will happen on login.
         }
 
         return flag || flag1 || flag2 || flag3 || flag4;
