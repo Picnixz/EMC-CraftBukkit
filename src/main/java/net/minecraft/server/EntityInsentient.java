@@ -173,6 +173,7 @@ public abstract class EntityInsentient extends EntityLiving {
         return null;
     }
 
+    public Item getCommonLoot() { return getLoot(); } // EMC
     protected Item getLoot() {
         return Item.getById(0);
     }
