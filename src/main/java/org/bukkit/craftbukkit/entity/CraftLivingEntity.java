@@ -361,6 +361,15 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         }
     }
 
+    // EMC start
+    public ItemStack getLoot() {
+        if (getHandle() instanceof EntityInsentient) {
+            final net.minecraft.server.Item loot = ((EntityInsentient) getHandle()).getCommonLoot();
+            return new org.bukkit.inventory.ItemStack(org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(loot));
+        }
+        return null;
+    }
+    // EMC end
     public EntityEquipment getEquipment() {
         return equipment;
     }
