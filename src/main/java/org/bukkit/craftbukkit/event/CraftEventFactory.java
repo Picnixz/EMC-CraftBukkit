@@ -291,6 +291,16 @@ public class CraftEventFactory {
 
         CreatureSpawnEvent event = new CreatureSpawnEvent(entity, spawnReason);
         craftServer.getPluginManager().callEvent(event);
+        // EMC start
+        if (event.isCancelled()) {
+            if (entity.getVehicle() != null) {
+                entity.getVehicle().remove();
+            }
+            if (entity.getPassenger() != null) {
+                entity.getPassenger().remove();
+            }
+        }
+        // EMC end
         return event;
     }
 
