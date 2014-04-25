@@ -144,6 +144,11 @@ public class EntityChicken extends EntityAnimal {
         }
     }
 
+    // EMC start
+    public boolean d(NBTTagCompound nbttagcompound) {
+        return (!(bZ() && passenger == null)) && super.d(nbttagcompound);
+    }
+    // EMC end
     public boolean bZ() {
         return this.bv;
     }
