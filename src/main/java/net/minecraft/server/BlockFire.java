@@ -99,7 +99,7 @@ public class BlockFire extends Block {
                     if (!World.a((IBlockAccess) world, i, j - 1, k) || l > 3) {
                         fireExtinguished(world, i, j, k); // CraftBukkit - burn out of inflammable block
                     }
-                } else if (!flag && !this.e((IBlockAccess) world, i, j - 1, k) && l == 15 && random.nextInt(4) == 0) {
+                } else if (!flag /* EMC - && !this.e((IBlockAccess) world, i, j - 1, k)*/ && l == 15 && random.nextInt(4) == 0) {
                     fireExtinguished(world, i, j, k); // CraftBukkit - burn out
                 } else {
                     boolean flag1 = world.z(i, j, k);
