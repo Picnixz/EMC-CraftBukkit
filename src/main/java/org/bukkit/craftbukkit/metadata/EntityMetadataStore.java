@@ -18,6 +18,6 @@ public class EntityMetadataStore extends MetadataStoreBase<Entity> implements Me
      */
     @Override
     protected String disambiguate(Entity entity, String metadataKey) {
-        return entity.getUniqueId().toString() + ":" + metadataKey;
+        return entity.getWorld().toString() + ":" + entity.getEntityId() + ":" + metadataKey;
     }
 }
