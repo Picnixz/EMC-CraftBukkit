@@ -109,11 +109,17 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
         if (this.L() < 0) {
             this.setPort(this.propertyManager.getInt("server-port", 25565));
         }
+        // Spigot start
+        this.a((PlayerList) (new DedicatedPlayerList(this)));
+        org.spigotmc.SpigotConfig.init();
+        org.spigotmc.SpigotConfig.registerCommands();
+        // Spigot end
 
         i.info("Generating keypair");
         this.a(MinecraftEncryption.b());
         i.info("Starting Minecraft server on " + (this.getServerIp().length() == 0 ? "*" : this.getServerIp()) + ":" + this.L());
 
+        if (!org.spigotmc.SpigotConfig.lateBind) {
         try {
             this.ai().a(inetaddress, this.L());
         } catch (Throwable ioexception) { // CraftBukkit - IOException -> Throwable
@@ -122,8 +128,13 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             i.warn("Perhaps a server is already running on that port?");
             return false;
         }
+        }
 
-        this.a((PlayerList) (new DedicatedPlayerList(this))); // CraftBukkit
+        // Spigot Start - Move DedicatedPlayerList up and bring plugin loading from CraftServer to here
+        // this.a((PlayerList) (new DedicatedPlayerList(this)));
+        server.loadPlugins();
+        server.enablePlugins(org.bukkit.plugin.PluginLoadOrder.STARTUP);
+        // Spigot End
 
         if (!this.getOnlineMode()) {
             i.warn("**** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!");
@@ -184,6 +195,18 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             String s3 = String.format("%.3fs", new Object[] { Double.valueOf((double) i1 / 1.0E9D)});
 
             i.info("Done (" + s3 + ")! For help, type \"help\" or \"?\"");
+
+        if (org.spigotmc.SpigotConfig.lateBind) {
+        try {
+            this.ai().a(inetaddress, this.L());
+        } catch (Throwable ioexception) { // CraftBukkit - IOException -> Throwable
+            i.warn("**** FAILED TO BIND TO PORT!");
+            i.warn("The exception was: {}", new Object[] { ioexception.toString()});
+            i.warn("Perhaps a server is already running on that port?");
+            return false;
+            }
+        }
+
             if (this.propertyManager.getBoolean("enable-query", false)) {
                 i.info("Starting GS4 status listener");
                 this.k = new RemoteStatusListener(this);
@@ -391,6 +414,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
     }
 
     protected boolean aE() {
+        server.getLogger().info( "**** Beginning UUID conversion, this may take A LONG time ****"); // Spigot, let the user know whats up!
         boolean flag = false;
 
         int i;

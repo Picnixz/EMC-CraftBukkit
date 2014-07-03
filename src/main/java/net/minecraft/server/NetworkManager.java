@@ -6,6 +6,7 @@ import javax.crypto.SecretKey;
 
 import net.minecraft.util.com.google.common.collect.Queues;
 import net.minecraft.util.com.google.common.util.concurrent.ThreadFactoryBuilder;
+import net.minecraft.util.com.mojang.authlib.properties.Property;
 import net.minecraft.util.io.netty.channel.Channel;
 import net.minecraft.util.io.netty.channel.ChannelFutureListener;
 import net.minecraft.util.io.netty.channel.ChannelHandlerContext;
@@ -21,6 +22,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
+// Spigot start
+import com.google.common.collect.ImmutableSet;
+// Spigot end
 
 public class NetworkManager extends SimpleChannelInboundHandler {
 
@@ -37,11 +41,30 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     private final Queue k = Queues.newConcurrentLinkedQueue();
     private final Queue l = Queues.newConcurrentLinkedQueue();
     private Channel m;
-    private SocketAddress n;
+    // Spigot Start
+    public SocketAddress n;
+    public java.util.UUID spoofedUUID;
+    public Property[] spoofedProfile;
+    public boolean preparing = true;
+    // Spigot End
     private PacketListener o;
     private EnumProtocol p;
     private IChatBaseComponent q;
     private boolean r;
+    // Spigot Start
+    public static final AttributeKey<Integer> protocolVersion = new AttributeKey<Integer>("protocol_version");
+    public static final ImmutableSet<Integer> SUPPORTED_VERSIONS = ImmutableSet.of(4, 5);
+    public static final int CURRENT_VERSION = 5;
+    public static int getVersion(Channel attr)
+    {
+        Integer ver = attr.attr( protocolVersion ).get();
+        return ( ver != null ) ? ver : CURRENT_VERSION;
+    }
+    public int getVersion()
+    {
+        return getVersion( this.m );
+    }
+    // Spigot End
 
     public NetworkManager(boolean flag) {
         this.j = flag;
@@ -51,6 +74,9 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         super.channelActive(channelhandlercontext);
         this.m = channelhandlercontext.channel();
         this.n = this.m.remoteAddress();
+        // Spigot Start
+        this.preparing = false;
+        // Spigot End
         this.a(EnumProtocol.HANDSHAKING);
     }
 
@@ -76,6 +102,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         }
 
         this.close(chatmessage);
+        if (MinecraftServer.getServer().isDebugging()) throwable.printStackTrace(); // Spigot
     }
 
     protected void a(ChannelHandlerContext channelhandlercontext, Packet packet) {
@@ -168,6 +195,9 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     public void close(IChatBaseComponent ichatbasecomponent) {
+        // Spigot Start
+        this.preparing = false;
+        // Spigot End
         if (this.m.isOpen()) {
             this.m.close();
             this.q = ichatbasecomponent;
@@ -207,4 +237,11 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     static Channel a(NetworkManager networkmanager) {
         return networkmanager.m;
     }
+
+    // Spigot Start
+    public SocketAddress getRawAddress()
+    {
+        return this.m.remoteAddress();
+    }
+    // Spigot End
 }

@@ -102,9 +102,30 @@ public class EntityItem extends Entity {
             if (this.onGround) {
                 this.motY *= -0.5D;
             }
+            // Spigot start - Make the hopper(s) below this item active.
+            // Called each tick on each item entity.
+            if (this.world.spigotConfig.altHopperTicking) {
+                int xi = MathHelper.floor(this.boundingBox.a);
+                int yi = MathHelper.floor(this.boundingBox.b) - 1;
+                int zi = MathHelper.floor(this.boundingBox.c);
+                int xf = MathHelper.floor(this.boundingBox.d);
+                int yf = MathHelper.floor(this.boundingBox.e) - 1;
+                int zf = MathHelper.floor(this.boundingBox.f);
+                for (int a = xi; a <= xf; a++) {
+                    for (int c = zi; c <= zf; c++) {
+                        for (int b = yi; b <= yf; b++) {
+                            TileEntity tileEntity = this.world.getTileEntity(a, b, c);
+                            if (tileEntity instanceof TileEntityHopper) {
+                                ((TileEntityHopper) tileEntity).makeTick();
+                            }
+                        }
+                    }
+                }
+            }
+            // Spigot end
 
             // ++this.age; // CraftBukkit - Moved up
-            if (!this.world.isStatic && this.age >= 6000) {
+            if (!this.world.isStatic && this.age >= world.spigotConfig.itemDespawnRate) { // Spigot
                 // CraftBukkit start - fire ItemDespawnEvent
                 if (org.bukkit.craftbukkit.event.CraftEventFactory.callItemDespawnEvent(this).isCancelled()) {
                     this.age = 0;
@@ -117,7 +138,10 @@ public class EntityItem extends Entity {
     }
 
     private void k() {
-        Iterator iterator = this.world.a(EntityItem.class, this.boundingBox.grow(0.5D, 0.0D, 0.5D)).iterator();
+        // Spigot start
+        double radius = world.spigotConfig.itemMerge;
+        Iterator iterator = this.world.a(EntityItem.class, this.boundingBox.grow(radius, radius, radius)).iterator();
+        // Spigot end
 
         while (iterator.hasNext()) {
             EntityItem entityitem = (EntityItem) iterator.next();
@@ -148,11 +172,13 @@ public class EntityItem extends Entity {
             } else if (itemstack1.count + itemstack.count > itemstack1.getMaxStackSize()) {
                 return false;
             } else {
-                itemstack1.count += itemstack.count;
-                entityitem.pickupDelay = Math.max(entityitem.pickupDelay, this.pickupDelay);
-                entityitem.age = Math.min(entityitem.age, this.age);
-                entityitem.setItemStack(itemstack1);
-                this.die();
+                // Spigot start
+                itemstack.count += itemstack1.count;
+                this.pickupDelay = Math.max(entityitem.pickupDelay, this.pickupDelay);
+                this.age = Math.min(entityitem.age, this.age);
+                this.setItemStack(itemstack);
+                entityitem.die();
+                // Spigot end
                 return true;
             }
         } else {
@@ -315,7 +341,7 @@ public class EntityItem extends Entity {
     public ItemStack getItemStack() {
         ItemStack itemstack = this.getDataWatcher().getItemStack(10);
 
-        return itemstack == null ? new ItemStack(Blocks.STONE) : itemstack; 
+        return itemstack == null ? new ItemStack(Blocks.STONE) : itemstack;
     }
 
     public void setItemStack(ItemStack itemstack) {

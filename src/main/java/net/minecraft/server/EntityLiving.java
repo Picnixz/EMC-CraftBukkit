@@ -81,6 +81,13 @@ public abstract class EntityLiving extends Entity {
     public int maxAirTicks = 300;
     ArrayList<org.bukkit.inventory.ItemStack> drops = null;
     // CraftBukkit end
+    // Spigot start
+    public void inactiveTick()
+    {
+        super.inactiveTick();
+        ++this.aU; // Above all the floats
+    }
+    // Spigot end
 
     public EntityLiving(World world) {
         super(world);
@@ -1547,8 +1554,10 @@ public abstract class EntityLiving extends Entity {
     protected void bn() {
         List list = this.world.getEntities(this, this.boundingBox.grow(0.20000000298023224D, 0.0D, 0.20000000298023224D));
 
-        if (list != null && !list.isEmpty()) {
+        if (this.R() && list != null && !list.isEmpty()) { // Spigot: Add this.R() condition
+            numCollisions -= world.spigotConfig.maxCollisionsPerEntity; // Spigot
             for (int i = 0; i < list.size(); ++i) {
+                if (numCollisions > world.spigotConfig.maxCollisionsPerEntity) { break; } // Spigot
                 Entity entity = (Entity) list.get(i);
 
                 // TODO better check now?
@@ -1559,9 +1568,12 @@ public abstract class EntityLiving extends Entity {
                 // CraftBukkit end
 
                 if (entity.R()) {
+                    entity.numCollisions++; // Spigot
+                    numCollisions++; // Spigot
                     this.o(entity);
                 }
             }
+            numCollisions = 0; // Spigot
         }
     }
 

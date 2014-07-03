@@ -30,7 +30,7 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 public class EntityPlayer extends EntityHuman implements ICrafting {
 
     private static final Logger bL = LogManager.getLogger();
-    private String locale = "en_US";
+    public String locale = "en_US"; // Spigot
     public PlayerConnection playerConnection;
     public final MinecraftServer server;
     public final PlayerInteractManager playerInteractManager;
@@ -62,7 +62,23 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public boolean keepLevel = false;
     public double maxHealthCache;
     public boolean joining = true;
+    public int lastPing = -1; // Spigot
     // CraftBukkit end
+    // Spigot start
+    public boolean collidesWithEntities = true;
+
+    @Override
+    public boolean Q()
+    {
+        return this.collidesWithEntities && super.Q();
+    }
+
+    @Override
+    public boolean R()
+    {
+        return this.collidesWithEntities && super.R();
+    }
+    // Spigot end
 
     public EntityPlayer(MinecraftServer minecraftserver, WorldServer worldserver, GameProfile gameprofile, PlayerInteractManager playerinteractmanager) {
         super(worldserver, gameprofile);
@@ -199,7 +215,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
             Chunk chunk;
 
-            while (iterator1.hasNext() && arraylist.size() < PacketPlayOutMapChunkBulk.c()) {
+            while (iterator1.hasNext() && arraylist.size() < this.world.spigotConfig.maxBulkChunk) { // Spigot
                 ChunkCoordIntPair chunkcoordintpair = (ChunkCoordIntPair) iterator1.next();
 
                 if (chunkcoordintpair != null) {

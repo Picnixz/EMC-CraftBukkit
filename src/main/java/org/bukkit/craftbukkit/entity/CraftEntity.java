@@ -205,7 +205,14 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
             return false;
         }
 
-        entity.world = ((CraftWorld) location.getWorld()).getHandle();
+        // Spigot start
+        if (!location.getWorld().equals(getWorld())) {
+          entity.teleportTo(location, cause.equals(TeleportCause.NETHER_PORTAL));
+          return true;
+        }
+
+        // entity.world = ((CraftWorld) location.getWorld()).getHandle();
+        // Spigot end
         entity.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         // entity.setLocation() throws no event, and so cannot be cancelled
         return true;
@@ -399,4 +406,20 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
         return getHandle().vehicle.getBukkitEntity();
     }
+
+    // Spigot start
+    private final Spigot spigot = new Spigot()
+    {
+        @Override
+        public boolean isInvulnerable()
+        {
+            return getHandle().isInvulnerable();
+        }
+    };
+
+    public Spigot spigot()
+    {
+        return spigot;
+    }
+    // Spigot end
 }

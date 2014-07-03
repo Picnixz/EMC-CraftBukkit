@@ -238,6 +238,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void kickPlayer(String message) {
+        org.spigotmc.AsyncCatcher.catchOp( "player kick"); // Spigot
         if (getHandle().playerConnection == null) return;
 
         getHandle().playerConnection.disconnect(message == null ? "" : message);
@@ -458,9 +459,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             return false;
         }
 
-        if (entity.vehicle != null || entity.passenger != null) {
-            return false;
-        }
+        // Spigot Start
+        // if (entity.vehicle != null || entity.passenger != null) {
+        // return false;
+        // }
+        // Spigot End
 
         // From = Players current Location
         Location from = this.getLocation();
@@ -474,6 +477,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (event.isCancelled()) {
             return false;
         }
+        
+        // Spigot Start
+        eject();
+        leaveVehicle();
+        // Spigot End
 
         // Update the From Location
         from = event.getFrom();
@@ -1048,6 +1056,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public void addChannel(String channel) {
+        com.google.common.base.Preconditions.checkState( channels.size() < 128, "Too many channels registered" ); // Spigot
         if (channels.add(channel)) {
             server.getPluginManager().callEvent(new PlayerRegisterChannelEvent(this, channel));
         }
@@ -1161,7 +1170,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void setFlySpeed(float value) {
         validateSpeed(value);
         EntityPlayer player = getHandle();
-        player.abilities.flySpeed = value / 2f;
+        player.abilities.flySpeed = Math.max( value, 0.0001f ) / 2f; // Spigot
         player.updateAbilities();
 
     }
@@ -1169,7 +1178,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void setWalkSpeed(float value) {
         validateSpeed(value);
         EntityPlayer player = getHandle();
-        player.abilities.walkSpeed = value / 2f;
+        player.abilities.walkSpeed = Math.max( value, 0.0001f ) / 2f; // Spigot
         player.updateAbilities();
     }
 
@@ -1217,7 +1226,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             throw new IllegalStateException("Cannot set scoreboard yet");
         }
         if (playerConnection.isDisconnected()) {
-            throw new IllegalStateException("Cannot set scoreboard for invalid CraftPlayer");
+            // throw new IllegalStateException("Cannot set scoreboard for invalid CraftPlayer"); // Spigot - remove this as Mojang's semi asynchronous Netty implementation can lead to races
         }
 
         this.server.getScoreboardManager().setPlayerBoard(this, scoreboard);
@@ -1285,4 +1294,104 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
         collection.add(new AttributeModifiable(getHandle().bb(), (new AttributeRanged("generic.maxHealth", scaledHealth ? healthScale : getMaxHealth(), 0.0D, Float.MAX_VALUE)).a("Max Health").a(true)));
     }
+
+    // Spigot start
+    private final Player.Spigot spigot = new Player.Spigot()
+    {
+
+        @Override
+        public InetSocketAddress getRawAddress()
+        {
+            return (InetSocketAddress) getHandle().playerConnection.networkManager.getRawAddress();
+        }
+
+        @Override
+        public boolean getCollidesWithEntities()
+        {
+            return getHandle().collidesWithEntities;
+        }
+
+        @Override
+        public void setCollidesWithEntities(boolean collides)
+        {
+            getHandle().collidesWithEntities = collides;
+            getHandle().k = collides; // First boolean of Entity
+        }
+
+        @Override
+        public void respawn()
+        {
+            if ( getHealth() <= 0 && isOnline() )
+            {
+                server.getServer().getPlayerList().moveToWorld( getHandle(), 0, false );
+            }
+        }
+
+        @Override
+        public void playEffect( Location location, Effect effect, int id, int data, float offsetX, float offsetY, float offsetZ, float speed, int particleCount, int radius )
+        {
+            Validate.notNull( location, "Location cannot be null" );
+            Validate.notNull( effect, "Effect cannot be null" );
+            Validate.notNull( location.getWorld(), "World cannot be null" );
+            Packet packet;
+            if ( effect.getType() != Effect.Type.PARTICLE )
+            {
+                int packetData = effect.getId();
+                packet = new PacketPlayOutWorldEvent( packetData, location.getBlockX(), location.getBlockY(), location.getBlockZ(), id, false );
+            } else
+            {
+                StringBuilder particleFullName = new StringBuilder();
+                particleFullName.append( effect.getName() );
+                if ( effect.getData() != null && ( effect.getData().equals( Material.class ) || effect.getData().equals( org.bukkit.material.MaterialData.class ) ) )
+                {
+                    particleFullName.append( '_' ).append( id );
+                }
+                if ( effect.getData() != null && effect.getData().equals( org.bukkit.material.MaterialData.class ) )
+                {
+                    particleFullName.append( '_' ).append( data );
+                }
+                packet = new PacketPlayOutWorldParticles( particleFullName.toString(), (float) location.getX(), (float) location.getY(), (float) location.getZ(), offsetX, offsetY, offsetZ, speed, particleCount );
+            }
+            int distance;
+            radius *= radius;
+            if ( getHandle().playerConnection == null )
+            {
+                return;
+            }
+            if ( !location.getWorld().equals( getWorld() ) )
+            {
+                return;
+            }
+
+            distance = (int) getLocation().distanceSquared( location );
+            if ( distance <= radius )
+            {
+                getHandle().playerConnection.sendPacket( packet );
+            }
+        }
+
+        @Override
+        public String getLocale()
+        {
+           return getHandle().locale;
+        }
+
+        @Override
+        public Set<Player> getHiddenPlayers()
+        {
+            Set<Player> ret = new HashSet<Player>();
+            for ( UUID u : hiddenPlayers )
+            {
+                ret.add( getServer().getPlayer( u ) );
+            }
+
+            return java.util.Collections.unmodifiableSet( ret );
+        }
+    };
+
+    public Player.Spigot spigot()
+    {
+        return spigot;
+    }
+    // Spigot end
 }

@@ -106,6 +106,7 @@ public class PlayerConnection implements PacketPlayInListener {
     private float lastPitch = Float.MAX_VALUE;
     private float lastYaw = Float.MAX_VALUE;
     private boolean justTeleported = false;
+    private boolean hasMoved; // Spigot
 
     // For the PacketPlayOutBlockPlace hack :(
     Long lastPacket;
@@ -183,7 +184,7 @@ public class PlayerConnection implements PacketPlayInListener {
         // CraftBukkit start - Check for NaN
         if (Double.isNaN(packetplayinflying.x) || Double.isNaN(packetplayinflying.y) || Double.isNaN(packetplayinflying.z) || Double.isNaN(packetplayinflying.stance)) {
             c.warn(player.getName() + " was caught trying to crash the server with an invalid position.");
-            getPlayer().kickPlayer("Nope!");
+            getPlayer().kickPlayer("NaN in position (Hacking?)"); //Spigot "Nope" -> Descriptive reason
             return;
         }
         // CraftBukkit end
@@ -202,6 +203,18 @@ public class PlayerConnection implements PacketPlayInListener {
 
             // CraftBukkit start - fire PlayerMoveEvent
             Player player = this.getPlayer();
+            // Spigot Start
+            if ( !hasMoved )
+            {
+                Location curPos = player.getLocation();
+                lastPosX = curPos.getX();
+                lastPosY = curPos.getY();
+                lastPosZ = curPos.getZ();
+                lastYaw = curPos.getYaw();
+                lastPitch = curPos.getPitch();
+                hasMoved = true;
+            }
+            // Spigot End
             Location from = new Location(player.getWorld(), lastPosX, lastPosY, lastPosZ, lastYaw, lastPitch); // Get the Players previous Event location.
             Location to = player.getLocation().clone(); // Start off the To location as the Players current location.
 
@@ -230,7 +243,7 @@ public class PlayerConnection implements PacketPlayInListener {
                 this.lastPitch = to.getPitch();
 
                 // Skip the first time we do this
-                if (from.getX() != Double.MAX_VALUE) {
+                if (true) { // Spigot - don't skip any move events
                     PlayerMoveEvent event = new PlayerMoveEvent(player, from, to);
                     this.server.getPluginManager().callEvent(event);
 
@@ -559,7 +572,18 @@ public class PlayerConnection implements PacketPlayInListener {
         }
     }
 
+    // Spigot start - limit place/interactions
+    private int lastPlace = -1;
+
     public void a(PacketPlayInBlockPlace packetplayinblockplace) {
+        boolean throttled = false;
+        if (lastPlace != -1 && MinecraftServer.currentTick - lastPlace < 2) {
+            throttled = true;
+        } else
+        {
+            lastPlace = MinecraftServer.currentTick;
+        }
+    // Spigot end
         WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
 
         // CraftBukkit start
@@ -602,10 +626,14 @@ public class PlayerConnection implements PacketPlayInListener {
 
             // CraftBukkit start
             int itemstackAmount = itemstack.count;
+            // Spigot start - skip the event if throttled
+            if (!throttled) {
             org.bukkit.event.player.PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.RIGHT_CLICK_AIR, itemstack);
             if (event.useItemInHand() != Event.Result.DENY) {
                 this.player.playerInteractManager.useItem(this.player, this.player.world, itemstack);
             }
+            }
+            // Spigot end
 
             // CraftBukkit - notch decrements the counter by 1 in the above method with food,
             // snowballs and so forth, but he does it in a place that doesn't cause the
@@ -626,7 +654,7 @@ public class PlayerConnection implements PacketPlayInListener {
                 return;
             }
 
-            if (!this.player.playerInteractManager.interact(this.player, worldserver, itemstack, i, j, k, l, packetplayinblockplace.h(), packetplayinblockplace.i(), packetplayinblockplace.j())) {
+            if (throttled || !this.player.playerInteractManager.interact(this.player, worldserver, itemstack, i, j, k, l, packetplayinblockplace.h(), packetplayinblockplace.i(), packetplayinblockplace.j())) { // Spigot - skip the event if throttled
                 always = true; // force PacketPlayOutSetSlot to be sent to client to update ItemStack count
             }
             // CraftBukkit end
@@ -765,7 +793,7 @@ public class PlayerConnection implements PacketPlayInListener {
             this.player.v();
         } else {
             c.warn(this.player.getName() + " tried to set an invalid carried item");
-            this.disconnect("Nope!"); // CraftBukkit
+            this.disconnect("Invalid hotbar selection (Hacking?)"); // CraftBukkit //Spigot "Nope" -> Descriptive reason
         }
     }
 
@@ -821,7 +849,25 @@ public class PlayerConnection implements PacketPlayInListener {
             } else if (s.isEmpty()) {
                 c.warn(this.player.getName() + " tried to send an empty message");
             } else if (getPlayer().isConversing()) {
-                getPlayer().acceptConversationInput(s);
+                final String message = s;
+
+                Waitable waitable = new Waitable() {
+                    @Override
+                    protected Object evaluate() {
+                        getPlayer().acceptConversationInput(message);
+                        return null;
+                    }
+                };
+
+                this.minecraftServer.processQueue.add(waitable);
+
+                try {
+                    waitable.get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
             } else if (this.player.getChatFlags() == EnumChatVisibility.SYSTEM) { // Re-add "Command Only" flag check
                 ChatMessage chatmessage = new ChatMessage("chat.cannotSend", new Object[0]);
 
@@ -836,9 +882,19 @@ public class PlayerConnection implements PacketPlayInListener {
                 this.minecraftServer.getPlayerList().sendMessage(chatmessage1, false);
             }
 
+            // Spigot - spam exclusions
+            boolean counted = true;
+            for ( String exclude : org.spigotmc.SpigotConfig.spamExclusions )
+            {
+                if ( exclude != null && s.startsWith( exclude ) )
+                {
+                    counted = false;
+                    break;
+                }
+            }
             // CraftBukkit start - replaced with thread safe throttle
             // this.chatThrottle += 20;
-            if (chatSpamField.addAndGet(this, 20) > 200 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
+            if (counted && chatSpamField.addAndGet(this, 20) > 200 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
                 if (packetplayinchat.a()) {
                     Waitable waitable = new Waitable() {
                         @Override
@@ -940,8 +996,9 @@ public class PlayerConnection implements PacketPlayInListener {
     // CraftBukkit end
 
     private void handleCommand(String s) {
+        org.bukkit.craftbukkit.SpigotTimings.playerCommandTimer.startTiming(); // Spigot
         // CraftBukkit start - whole method
-        this.c.info(this.player.getName() + " issued server command: " + s);
+        if ( org.spigotmc.SpigotConfig.logCommands ) this.c.info(this.player.getName() + " issued server command: " + s); // Spigot
 
         CraftPlayer player = this.getPlayer();
 
@@ -949,18 +1006,22 @@ public class PlayerConnection implements PacketPlayInListener {
         this.server.getPluginManager().callEvent(event);
 
         if (event.isCancelled()) {
+            org.bukkit.craftbukkit.SpigotTimings.playerCommandTimer.stopTiming(); // Spigot
             return;
         }
 
         try {
             if (this.server.dispatchCommand(event.getPlayer(), event.getMessage().substring(1))) {
+                org.bukkit.craftbukkit.SpigotTimings.playerCommandTimer.stopTiming(); // Spigot
                 return;
             }
         } catch (org.bukkit.command.CommandException ex) {
             player.sendMessage(org.bukkit.ChatColor.RED + "An internal error occurred while attempting to perform this command");
             java.util.logging.Logger.getLogger(PlayerConnection.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            org.bukkit.craftbukkit.SpigotTimings.playerCommandTimer.stopTiming(); // Spigot
             return;
         }
+        org.bukkit.craftbukkit.SpigotTimings.playerCommandTimer.stopTiming(); // Spigot
         //this.minecraftServer.getCommandHandler().a(this.player, s);
         // CraftBukkit end
     }
@@ -1051,6 +1112,13 @@ public class PlayerConnection implements PacketPlayInListener {
         if (this.player.dead) return; // CraftBukkit
         WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
         Entity entity = packetplayinuseentity.a((World) worldserver);
+        // Spigot Start
+        if ( entity == player )
+        {
+            disconnect( "Cannot interact with self!" );
+            return;
+        }
+        // Spigot End
 
         this.player.v();
         if (entity != null) {
@@ -1462,7 +1530,7 @@ public class PlayerConnection implements PacketPlayInListener {
             ItemStack itemstack = packetplayinsetcreativeslot.getItemStack();
             boolean flag1 = packetplayinsetcreativeslot.c() >= 1 && packetplayinsetcreativeslot.c() < 36 + PlayerInventory.getHotbarSize();
             // CraftBukkit - Add invalidItems check
-            boolean flag2 = itemstack == null || itemstack.getItem() != null && !invalidItems.contains(Item.b(itemstack.getItem()));
+            boolean flag2 = itemstack == null || itemstack.getItem() != null && (!invalidItems.contains(Item.b(itemstack.getItem())) || !org.spigotmc.SpigotConfig.filterCreativeItems); // Spigot
             boolean flag3 = itemstack == null || itemstack.getData() >= 0 && itemstack.count <= 64 && itemstack.count > 0;
 
             // CraftBukkit start - Call click event
@@ -1557,6 +1625,7 @@ public class PlayerConnection implements PacketPlayInListener {
 
             for (j = 0; j < 4; ++j) {
                 boolean flag = true;
+                packetplayinupdatesign.f()[j] = packetplayinupdatesign.f()[j].replaceAll( "\uF700", "" ).replaceAll( "\uF701", "" ); // Spigot - Mac OSX sends weird chars
 
                 if (packetplayinupdatesign.f()[j].length() > 15) {
                     flag = false;
@@ -1700,7 +1769,7 @@ public class PlayerConnection implements PacketPlayInListener {
                     }
 
                     if (itemstack.getItem() == Items.WRITTEN_BOOK && itemstack1.getItem() == Items.BOOK_AND_QUILL) {
-                        CraftEventFactory.handleEditBookEvent(player, itemstack); // CraftBukkit
+                        CraftEventFactory.handleEditBookEvent(player, itemstack); // CraftBukkit
                     }
 
                     return;
@@ -1847,7 +1916,7 @@ public class PlayerConnection implements PacketPlayInListener {
     }
 
     // CraftBukkit start - Add "isDisconnected" method
-    public final boolean isDisconnected() {
+    public boolean isDisconnected() {
         return !this.player.joining && !NetworkManager.a(this.networkManager).config().isAutoRead();
     }
     // CraftBukkit end

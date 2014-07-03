@@ -277,6 +277,10 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                 // Update client
                 if (this instanceof EntityPlayer) {
                     ((EntityPlayer) this).playerConnection.sendPacket(new PacketPlayOutSetSlot((byte) 0, activeContainer.a((IInventory) this.inventory, this.inventory.itemInHandIndex).index, this.f));
+                    // Spigot Start
+                    ((EntityPlayer) this).getBukkitEntity().updateInventory();
+                    ((EntityPlayer) this).getBukkitEntity().updateScaledHealth();
+                    // Spigot End
                 }
                 return;
             }
@@ -323,6 +327,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
     public void setPassengerOf(Entity entity) {
         // CraftBukkit end
         if (this.vehicle != null && entity == null) {
+            world.getServer().getPluginManager().callEvent( new org.spigotmc.event.entity.EntityDismountEvent( this.getBukkitEntity(), this.vehicle.getBukkitEntity() ) ); // Spigot
             // CraftBukkit start - use parent method instead to correctly fire VehicleExitEvent
             Entity originalVehicle = this.vehicle;
             // First statement moved down, second statement handled in parent method.
@@ -429,7 +434,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
 
             List list = this.world.getEntities(this, axisalignedbb);
 
-            if (list != null) {
+            if (list != null && this.R()) { // Spigot: Add this.R() condition
                 for (int i = 0; i < list.size(); ++i) {
                     Entity entity = (Entity) list.get(i);
 

@@ -40,6 +40,7 @@ public class Chunk {
     public int r;
     public long s;
     private int x;
+    protected net.minecraft.util.gnu.trove.map.hash.TObjectIntHashMap<Class> entityCount = new net.minecraft.util.gnu.trove.map.hash.TObjectIntHashMap<Class>(); // Spigot
 
     // CraftBukkit start - Neighbor loaded cache for chunk lighting and entity ticking
     private int neighbors = 0x1 << 12;
@@ -142,7 +143,7 @@ public class Chunk {
                         }
 
                         this.sections[l1].setTypeId(l, j1 & 15, i1, block);
-                        this.sections[l1].setData(l, j1 & 15, i1, abyte[k1]);
+                        this.sections[l1].setData(l, j1 & 15, i1, checkData( block, abyte[k1] ) );
                     }
                 }
             }
@@ -425,6 +426,17 @@ public class Chunk {
         }
     }
 
+    // Spigot start - prevent invalid data values
+    public static int checkData( Block block, int data )
+    {
+        if (block == Blocks.DOUBLE_PLANT )
+        {
+            return data < 6 || data >= 8 ? data : 0;
+        }
+        return data;
+    }
+    // Spigot end
+
     public boolean a(int i, int j, int k, Block block, int l) {
         int i1 = k << 4 | i;
 
@@ -479,7 +491,7 @@ public class Chunk {
             if (chunksection.getTypeId(i, j & 15, k) != block) {
                 return false;
             } else {
-                chunksection.setData(i, j & 15, k, l);
+                chunksection.setData(i, j & 15, k, checkData( block, l ) );
                 if (flag) {
                     this.initLighting();
                 } else {
@@ -544,8 +556,9 @@ public class Chunk {
                 return false;
             } else {
                 this.n = true;
-                chunksection.setData(i, j & 15, k, l);
-                if (chunksection.getTypeId(i, j & 15, k) instanceof IContainer) {
+                Block block = chunksection.getTypeId( i, j & 15, k );
+                chunksection.setData(i, j & 15, k, checkData( block, l ) );
+                if (block instanceof IContainer) {
                     TileEntity tileentity = this.e(i, j, k);
 
                     if (tileentity != null) {
@@ -635,6 +648,22 @@ public class Chunk {
         entity.ai = k;
         entity.aj = this.locZ;
         this.entitySlices[k].add(entity);
+        // Spigot start - increment creature type count
+        // Keep this synced up with World.a(Class)
+        if (entity instanceof EntityInsentient) {
+            EntityInsentient entityinsentient = (EntityInsentient) entity;
+            if (entityinsentient.isTypeNotPersistent() && entityinsentient.isPersistent()) {
+                return;
+            }
+        }
+        for ( EnumCreatureType creatureType : EnumCreatureType.values() )
+        {
+            if ( creatureType.a().isAssignableFrom( entity.getClass() ) )
+            {
+                this.entityCount.adjustOrPutValue( creatureType.a(), 1, 1 );
+            }
+        }
+        // Spigot end
     }
 
     public void b(Entity entity) {
@@ -651,6 +680,22 @@ public class Chunk {
         }
 
         this.entitySlices[i].remove(entity);
+        // Spigot start - decrement creature type count
+        // Keep this synced up with World.a(Class)
+        if (entity instanceof EntityInsentient) {
+            EntityInsentient entityinsentient = (EntityInsentient) entity;
+            if (entityinsentient.isTypeNotPersistent() && entityinsentient.isPersistent()) {
+                return;
+            }
+        }
+        for ( EnumCreatureType creatureType : EnumCreatureType.values() )
+        {
+            if ( creatureType.a().isAssignableFrom( entity.getClass() ) )
+            {
+                this.entityCount.adjustValue( creatureType.a(), -1 );
+            }
+        }
+        // Spigot end
     }
 
     public boolean d(int i, int j, int k) {
@@ -705,6 +750,11 @@ public class Chunk {
 
             tileentity.t();
             this.tileEntities.put(chunkposition, tileentity);
+            // Spigot start - The tile entity has a world, now hoppers can be born ticking.
+            if (this.world.spigotConfig.altHopperTicking) {
+                this.world.triggerHoppersList.add(tileentity);
+            }
+            // Spigot end
             // CraftBukkit start
         } else {
             System.out.println("Attempted to place a tile entity (" + tileentity + ") at " + tileentity.x + "," + tileentity.y + "," + tileentity.z
@@ -750,6 +800,15 @@ public class Chunk {
 
         while (iterator.hasNext()) {
             TileEntity tileentity = (TileEntity) iterator.next();
+            // Spigot Start
+            if ( tileentity instanceof IInventory )
+            {
+                for ( org.bukkit.craftbukkit.entity.CraftHumanEntity h : new ArrayList<org.bukkit.craftbukkit.entity.CraftHumanEntity>( (List) ( (IInventory) tileentity ).getViewers() ) )
+                {
+                    h.getHandle().closeInventory();
+                }
+            }
+            // Spigot End
 
             this.world.a(tileentity);
         }
@@ -759,6 +818,15 @@ public class Chunk {
             java.util.Iterator<Object> iter = this.entitySlices[i].iterator();
             while (iter.hasNext()) {
                 Entity entity = (Entity) iter.next();
+                // Spigot Start
+                if ( entity instanceof IInventory )
+                {
+                    for ( org.bukkit.craftbukkit.entity.CraftHumanEntity h : new ArrayList<org.bukkit.craftbukkit.entity.CraftHumanEntity>( (List) ( (IInventory) entity ).getViewers() ) )
+                    {
+                        h.getHandle().closeInventory();
+                    }
+                }
+                // Spigot End
 
                 // Do not pass along players, as doing so can get them stuck outside of time.
                 // (which for example disables inventory icon updates and prevents block breaking)
@@ -896,13 +964,21 @@ public class Chunk {
         }
 
         this.m = true;
-        if (!this.lit && this.done) {
+        if (!this.lit && this.done && this.world.spigotConfig.randomLightUpdates) { // Spigot - also use random light updates setting to determine if we should relight
             this.p();
         }
     }
 
     public boolean k() {
-        return this.m && this.done && this.lit;
+        // Spigot Start
+        /*
+         * As of 1.7, Mojang added a check to make sure that only chunks which have been lit are sent to the client.
+         * Unfortunately this interferes with our modified chunk ticking algorithm, which will only tick chunks distant from the player on a very infrequent basis.
+         * We cannot unfortunately do this lighting stage during chunk gen as it appears to put a lot more noticeable load on the server, than when it is done at play time.
+         * For now at least we will simply send all chunks, in accordance with pre 1.7 behaviour.
+         */
+        return true;
+        // Spigot End
     }
 
     public ChunkCoordIntPair l() {
