@@ -585,6 +585,7 @@ public class PlayerConnection implements PacketPlayInListener {
         {
             lastPlace = MinecraftServer.currentTick;
         }
+        throttled = false; // EMC
     // Spigot end
         WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
 
