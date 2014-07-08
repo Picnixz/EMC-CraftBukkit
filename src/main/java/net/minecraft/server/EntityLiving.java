@@ -988,6 +988,16 @@ public abstract class EntityLiving extends Entity {
     // CraftBukkit start
     protected boolean d(DamageSource damagesource, float f) { // void -> boolean
         if (!this.isInvulnerable()) {
+            // EMC start - moved up from below to bring back old behavior.
+            EntityDamageEvent event = CraftEventFactory.handleLivingEntityDamageEvent(this, damagesource, f, 0, 0, 0, 0, 0, 0);
+
+            if (event.isCancelled()) {
+                return false;
+            }
+
+            f = (float) event.getDamage();
+            // EMC end
+
             boolean human = this instanceof EntityHuman;
             float originalDamage = f;
             float preDamage = f;
@@ -1027,13 +1037,18 @@ public abstract class EntityLiving extends Entity {
             f = Math.max(f - this.br(), 0.0F);
             float absorptionModifier = Math.max(f1 - f, 0.0F);
 
-            EntityDamageEvent event = CraftEventFactory.handleLivingEntityDamageEvent(this, damagesource, originalDamage, -hardHatModifier, -blockingModifier, -armorModifier, -resistanceModifier, -magicModifier, -absorptionModifier);
-
-            if (event.isCancelled()) {
-                return false;
+            // EMC start - Moved event call up
+            event.setDamage(DamageModifier.ARMOR,      -armorModifier);
+            if (damagesource == DamageSource.FALLING_BLOCK || damagesource == DamageSource.ANVIL) {
+                event.setDamage(DamageModifier.HARD_HAT, -hardHatModifier);
             }
-
-            f = (float) event.getFinalDamage();
+            if (human) {
+                event.setDamage(DamageModifier.BLOCKING, -blockingModifier);
+            }
+            event.setDamage(DamageModifier.RESISTANCE, -resistanceModifier);
+            event.setDamage(DamageModifier.MAGIC,      -magicModifier);
+            event.setDamage(DamageModifier.ABSORPTION, -absorptionModifier);
+            // EMC end
 
             // Apply damage to helmet
             if ((damagesource == DamageSource.ANVIL || damagesource == DamageSource.FALLING_BLOCK) && this.getEquipment(4) != null) {
