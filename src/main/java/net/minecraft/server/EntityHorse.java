@@ -168,7 +168,7 @@ public class EntityHorse extends EntityAnimal implements IInventoryListener {
         this.br = flag;
     }
 
-    public boolean bM() {
+    public boolean bM_ignored() { // EMC - Allow undead to be leashed
         return !this.cE() && super.bM();
     }
 
