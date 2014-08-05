@@ -628,6 +628,9 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
         this.methodProfiler.b();
         this.methodProfiler.b();
+        org.spigotmc.WatchdogThread.tick(); // Spigot
+        SpigotTimings.serverTickTimer.stopTiming(); // Spigot
+        org.spigotmc.CustomTimingsHandler.tick(); // Spigot
     }
 
     public void v() {
@@ -743,9 +746,6 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         SpigotTimings.tickablesTimer.stopTiming(); // Spigot
 
         this.methodProfiler.b();
-        org.spigotmc.WatchdogThread.tick(); // Spigot
-        SpigotTimings.serverTickTimer.stopTiming(); // Spigot
-        org.spigotmc.CustomTimingsHandler.tick(); // Spigot
     }
 
     public boolean getAllowNether() {
