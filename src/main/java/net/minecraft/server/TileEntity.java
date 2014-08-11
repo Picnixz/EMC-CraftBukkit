@@ -15,6 +15,8 @@ public class TileEntity {
     public CustomTimingsHandler tickTimer = org.bukkit.craftbukkit.SpigotTimings.getTileEntityTimings(this); // Spigot
     private static final Logger a = LogManager.getLogger();
     private static Map i = new HashMap();
+    public boolean isAdded = false; // Spigot - optimize contains checks
+    public static Map<String, Class> getTileEntityMap() { return i;} // Spigot - reference <String,Class> TE map
     private static Map j = new HashMap();
     protected World world;
     public int x;

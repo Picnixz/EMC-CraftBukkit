@@ -1,7 +1,12 @@
 package org.spigotmc;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.google.common.collect.Maps;
+import net.minecraft.server.TileEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -316,5 +321,51 @@ public class SpigotWorldConfig
     private void witherSpawnSoundRadius()
     {
         witherSpawnSoundRadius = getInt( "wither-spawn-sound-radius", 0 );
+    }
+
+    public final Map<Class,Integer> tileEntityTickIntervals = Maps.newHashMap();
+    private static final Map<String,Integer> defaultTileEntityTickIntervals = new HashMap<String, Integer>() {{
+        // Use 0 for no ticking
+        // does findPlayer lookup, so this helps performance to slow down
+        put("chest", 10);
+        put("enderchest", 10);
+        put("enchanttable", 10);
+
+        // These TE's have empty tick methods, doing nothing. Never bother ticking them.
+        put("recordplayer", 0);
+        put("trap", 0); // Dispenser
+        put("dropper", 0);
+        put("sign", 0);
+        put("music", 0);
+        put("airportal", 0);  // Ender Portal
+        put("control", 0); // Command Block
+        put("skull", 0);
+        put("comparator", 0);
+        put("flowerpot", 0);
+
+        // Slow things down that players won't notice due to craftbukkit "wall time" patches.
+        put("furnace", 4);
+        put("cauldron", 4);
+
+        // Vanilla controlled values - These are checks already done in vanilla, so don't tick on ticks we know
+        // won't do anything anyways
+        put("beacon", 80);
+        put("dldetector", 20);
+    }};
+    private void tileEntityTickIntervals() {
+        final Map<String, Class> tileEntityMap = TileEntity.getTileEntityMap();
+        for (Map.Entry<String, Class> entry : tileEntityMap.entrySet()) {
+            String key = entry.getKey().toLowerCase();
+            Class cls = entry.getValue();
+            Integer def = defaultTileEntityTickIntervals.get(key);
+            if (def == null) {
+                def = 1;
+            }
+            Integer tickInterval = getInt("tile-entity-tick-intervals." + key, def);
+            if (!tickInterval.equals(def)) {
+                log("TileEntity - " + entry.getKey() +" - Tick Interval: " + tickInterval);
+            }
+            tileEntityTickIntervals.put(cls, tickInterval);
+        }
     }
 }
