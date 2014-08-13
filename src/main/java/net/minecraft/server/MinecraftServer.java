@@ -603,9 +603,10 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             // Spigot Start
             // We replace this with saving each individual world as this.saveChunks(...) is broken,
             // and causes the main thread to sleep for random amounts of time depending on chunk activity
+            // Also pass flag to only save modified chunks
             server.playerCommandState = true;
             for (World world : worlds) {
-                world.getWorld().save();
+                world.getWorld().save(false);
             }
             server.playerCommandState = false;
             // this.saveChunks(true);
