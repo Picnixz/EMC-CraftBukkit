@@ -792,6 +792,7 @@ public class WorldServer extends World {
 
     public void save(boolean flag, IProgressUpdate iprogressupdate) throws ExceptionWorldConflict { // CraftBukkit - added throws
         if (this.chunkProvider.canSave()) {
+            org.bukkit.Bukkit.getPluginManager().callEvent(new org.bukkit.event.world.WorldSaveEvent(getWorld())); // Spigot
             if (iprogressupdate != null) {
                 iprogressupdate.a("Saving level");
             }
