@@ -1084,8 +1084,8 @@ public final class CraftServer implements Server {
             try {
                 handle.save(true, null);
                 handle.saveLevel();
-                WorldSaveEvent event = new WorldSaveEvent(handle.getWorld());
-                getPluginManager().callEvent(event);
+                // WorldSaveEvent event = new WorldSaveEvent(handle.getWorld()); // Spigot - moved to .save()
+                // getPluginManager().callEvent(event); // Spigot - moved to .save()
             } catch (ExceptionWorldConflict ex) {
                 getLogger().log(Level.SEVERE, null, ex);
             }

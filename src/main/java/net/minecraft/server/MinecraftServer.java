@@ -376,8 +376,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                     worldserver.save(true, (IProgressUpdate) null);
                     worldserver.saveLevel();
 
-                    WorldSaveEvent event = new WorldSaveEvent(worldserver.getWorld());
-                    this.server.getPluginManager().callEvent(event);
+                    // WorldSaveEvent event = new WorldSaveEvent(worldserver.getWorld()); // Spigot - moved to .save()
+                    // getPluginManager().callEvent(event); // Spigot - moved to .save()
                     // CraftBukkit end
                 }
             }
