@@ -52,7 +52,7 @@ class ThreadPlayerLookupUUID extends Thread {
                 LoginListener.a(this.a, this.a.a(gameprofile));
                 LoginListener.a(this.a, EnumProtocolState.READY_TO_ACCEPT);
             } else {
-                this.a.disconnect("Authentication servers are down. Please try again later, sorry!");
+                this.a.disconnect("Minecraft Authentication servers are down. Please try again later, sorry! \n\nThis is not a problem with our server. Please check http://xpaw.ru/mcstatus/"); // Spigot
                 LoginListener.e().error("Couldn\'t verify username because servers are unavailable");
             }
             // CraftBukkit start - catch all exceptions
