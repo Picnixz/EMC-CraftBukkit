@@ -1330,6 +1330,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     {
 
         @Override
+        public org.bukkit.entity.Fish getFishingHook() {
+            if (getHandle().hookedFish == null) {
+                return null;
+            }
+            return (org.bukkit.entity.Fish) getHandle().hookedFish.getBukkitEntity();
+        }
+
+        @Override
         public InetSocketAddress getRawAddress()
         {
             return (InetSocketAddress) getHandle().playerConnection.networkManager.getRawAddress();

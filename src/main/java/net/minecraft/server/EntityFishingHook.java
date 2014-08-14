@@ -435,9 +435,9 @@ public class EntityFishingHook extends Entity {
             }
             // CraftBukkit end
 
-            this.die();
-            this.owner.hookedFish = null;
-            return b0;
+            // this.die(); // Spigot - move to after damage event
+            // this.owner.hookedFish = null; // Spigot - moved to after damage event
+            return b0 == 0 ? - 1 : b0; // Spigot - use -1 to represent "0 but kill entity"
         }
     }
 

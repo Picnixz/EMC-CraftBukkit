@@ -14,7 +14,8 @@ public class ItemFishingRod extends Item {
         if (entityhuman.hookedFish != null) {
             int i = entityhuman.hookedFish.e();
 
-            itemstack.damage(i, entityhuman);
+            itemstack.damage(Math.max(0, i), entityhuman); // Spigot - Ignore -1 return using Math.max
+            if (i != 0) { entityhuman.hookedFish.die(); } // Spigot - removed from e(), and 0 = cancelled
             entityhuman.aZ();
         } else {
             // CraftBukkit start
