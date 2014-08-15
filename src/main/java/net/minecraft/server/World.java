@@ -2024,6 +2024,7 @@ public abstract class World implements IBlockAccess {
                     }
                 }
 
+                tileentity.a(this); // Spigot
                 this.a.add(tileentity);
             } else {
                 this.tileEntityList.add(tileentity);
