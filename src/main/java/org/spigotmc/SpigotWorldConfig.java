@@ -317,4 +317,11 @@ public class SpigotWorldConfig
     {
         witherSpawnSoundRadius = getInt( "wither-spawn-sound-radius", 0 );
     }
+
+    public int currentPrimedTnt = 0;
+    public int maxTntTicksPerTick;
+    private void maxTntPerTick() {
+        maxTntTicksPerTick = getInt( "max-tnt-per-tick", 4 );
+        log( "Max TNT Explosions: " + maxTntTicksPerTick );
+    }
 }
