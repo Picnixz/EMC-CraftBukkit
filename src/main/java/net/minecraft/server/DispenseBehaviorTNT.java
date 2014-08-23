@@ -42,7 +42,7 @@ final class DispenseBehaviorTNT extends DispenseBehaviorItem {
             }
         }
 
-        EntityTNTPrimed entitytntprimed = new EntityTNTPrimed(world, event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ(), (EntityLiving) null);
+        EntityTNTPrimed entitytntprimed = new EntityTNTPrimed(block.getLocation(), world, event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ(), (EntityLiving) null); // Spigot
         // CraftBukkit end
 
         world.addEntity(entitytntprimed);
