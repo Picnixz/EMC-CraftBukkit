@@ -10,6 +10,7 @@ import org.bukkit.entity.TNTPrimed;
 
 public class CraftTNTPrimed extends CraftEntity implements TNTPrimed {
 
+    public org.bukkit.Location getSourceLoc() { return getHandle().sourceLoc; } // Spigot
     public CraftTNTPrimed(CraftServer server, EntityTNTPrimed entity) {
         super(server, entity);
     }

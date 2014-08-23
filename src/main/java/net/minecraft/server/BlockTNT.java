@@ -30,7 +30,9 @@ public class BlockTNT extends Block {
 
     public void wasExploded(World world, int i, int j, int k, Explosion explosion) {
         if (!world.isStatic) {
-            EntityTNTPrimed entitytntprimed = new EntityTNTPrimed(world, (double) ((float) i + 0.5F), (double) ((float) j + 0.5F), (double) ((float) k + 0.5F), explosion.c());
+
+            org.bukkit.Location loc = explosion.source instanceof EntityTNTPrimed ? ((EntityTNTPrimed) explosion.source).sourceLoc : new org.bukkit.Location(world.getWorld(), i, j, k); // Spigot
+            EntityTNTPrimed entitytntprimed = new EntityTNTPrimed(loc, world, (double) ((float) i + 0.5F), (double) ((float) j + 0.5F), (double) ((float) k + 0.5F), explosion.c());
 
             entitytntprimed.fuseTicks = world.random.nextInt(entitytntprimed.fuseTicks / 4) + entitytntprimed.fuseTicks / 8;
             world.addEntity(entitytntprimed);
@@ -44,7 +46,8 @@ public class BlockTNT extends Block {
     public void a(World world, int i, int j, int k, int l, EntityLiving entityliving) {
         if (!world.isStatic) {
             if ((l & 1) == 1) {
-                EntityTNTPrimed entitytntprimed = new EntityTNTPrimed(world, (double) ((float) i + 0.5F), (double) ((float) j + 0.5F), (double) ((float) k + 0.5F), entityliving);
+                org.bukkit.Location loc = new org.bukkit.Location(world.getWorld(), i, j, k); // Spigot
+                EntityTNTPrimed entitytntprimed = new EntityTNTPrimed(loc, world, (double) ((float) i + 0.5F), (double) ((float) j + 0.5F), (double) ((float) k + 0.5F), entityliving); // Spigot - add loc
 
                 world.addEntity(entitytntprimed);
                 world.makeSound(entitytntprimed, "game.tnt.primed", 1.0F, 1.0F);
