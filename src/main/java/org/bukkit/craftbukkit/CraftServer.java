@@ -524,7 +524,13 @@ public final class CraftServer implements Server {
     public Player getPlayer(final String name) {
         Validate.notNull(name, "Name cannot be null");
 
-        Player found = null;
+        // Spigot start
+        Player found = getPlayerExact(name);
+        if (found != null) {
+            return found;
+        }
+        // Spigot end
+
         String lowerName = name.toLowerCase();
         int delta = Integer.MAX_VALUE;
         for (Player player : getOnlinePlayers()) {
@@ -543,17 +549,10 @@ public final class CraftServer implements Server {
     @Override
     @Deprecated
     public Player getPlayerExact(String name) {
-        Validate.notNull(name, "Name cannot be null");
-
-        String lname = name.toLowerCase();
-
-        for (Player player : getOnlinePlayers()) {
-            if (player.getName().equalsIgnoreCase(lname)) {
-                return player;
-            }
-        }
-
-        return null;
+        // Spigot start - replace whole method
+        EntityPlayer player = playerList.playerMap.get(name);
+        return player != null ? player.getBukkitEntity() : null;
+        // Spigot end
     }
 
     // TODO: In 1.8+ this should use the server's UUID->EntityPlayer map
