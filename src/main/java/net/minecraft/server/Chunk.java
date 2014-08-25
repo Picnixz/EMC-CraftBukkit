@@ -809,6 +809,11 @@ public class Chunk {
                     h.getHandle().closeInventory();
                 }
             }
+            // These need to tick on unload as they have been reduced to only tick once every 10 ticks.
+            // And unloading them outside of the 1 in every tick window will skew their cook time.
+            if ( tileentity instanceof TileEntityBrewingStand || tileentity instanceof TileEntityFurnace) {
+                tileentity.tick();
+            }
             // Spigot End
 
             this.world.a(tileentity);

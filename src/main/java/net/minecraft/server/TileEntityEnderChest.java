@@ -11,22 +11,23 @@ public class TileEntityEnderChest extends TileEntity {
 
     public void h() {
         super.h();
-        if (++this.k % 20 * 4 == 0) {
+        if (true) { // Spigot Rate controlled by Improved Tick Handling
             this.world.playNote(this.x, this.y, this.z, Blocks.ENDER_CHEST, 1, this.j);
         }
-
+    } // Spigot
+    private void sendSounds(boolean isOpen) { // Spigot
         this.i = this.a;
         float f = 0.1F;
         double d0;
 
-        if (this.j > 0 && this.a == 0.0F) {
+        if (isOpen && this.j == 1) { // Spigot - send only on open when == 1
             double d1 = (double) this.x + 0.5D;
 
             d0 = (double) this.z + 0.5D;
             this.world.makeSound(d1, (double) this.y + 0.5D, d0, "random.chestopen", 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
         }
 
-        if (this.j == 0 && this.a > 0.0F || this.j > 0 && this.a < 1.0F) {
+        if (!isOpen && this.j == 0) { // Spigot - Send on close when == 0
             float f1 = this.a;
 
             if (this.j > 0) {
@@ -41,7 +42,7 @@ public class TileEntityEnderChest extends TileEntity {
 
             float f2 = 0.5F;
 
-            if (this.a < f2 && f1 >= f2) {
+            if (true || this.a < f2 && f1 >= f2) { // Spigot - Always send
                 d0 = (double) this.x + 0.5D;
                 double d2 = (double) this.z + 0.5D;
 
@@ -70,11 +71,13 @@ public class TileEntityEnderChest extends TileEntity {
 
     public void a() {
         ++this.j;
+        sendSounds(true); // Spigot
         this.world.playNote(this.x, this.y, this.z, Blocks.ENDER_CHEST, 1, this.j);
     }
 
     public void b() {
         --this.j;
+        sendSounds(false); // Spigot
         this.world.playNote(this.x, this.y, this.z, Blocks.ENDER_CHEST, 1, this.j);
     }
 

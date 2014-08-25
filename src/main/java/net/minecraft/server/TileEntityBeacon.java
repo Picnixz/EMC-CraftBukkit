@@ -45,10 +45,10 @@ public class TileEntityBeacon extends TileEntity implements IInventory {
     public TileEntityBeacon() {}
 
     public void h() {
-        if (this.world.getTime() % 80L == 0L) {
+        // if (this.world.getTime() % 80L == 0L) { // Spigot - controlled by Improved Tick handling
             this.y();
             this.x();
-        }
+        // } // Spigot
     }
 
     private void x() {
