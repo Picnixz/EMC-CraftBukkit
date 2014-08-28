@@ -110,6 +110,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     // Spigot start
     private static final int TPS = 20;
     private static final int TICK_TIME = 1000000000 / TPS;
+    private static final long MAX_CATCHUP_BUFFER = TICK_TIME * TPS * 60L;
     private static final int SAMPLE_INTERVAL = 100;
     public final double[] recentTps = new double[ 3 ];
     // Spigot end
@@ -465,16 +466,24 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
                 // Spigot start
                 Arrays.fill( recentTps, 20 );
-                long lastTick = System.nanoTime(), catchupTime = 0, curTime, wait, tickSection = lastTick;
+                long lastTick = System.nanoTime() - TICK_TIME, catchupTime = 0, curTime, wait, tickSection = lastTick;
                 while (this.isRunning) {
                     curTime = System.nanoTime();
-                    wait = TICK_TIME - (curTime - lastTick) - catchupTime;
+                    wait = TICK_TIME - (curTime - lastTick);
+                    if (wait > 0) {
+                        if (wait < catchupTime) {
+                            catchupTime -= wait;
+                            wait = 0;
+                        } else if (catchupTime > 2000000) {
+                            wait -= catchupTime;
+                            catchupTime -= catchupTime;
+                        }
+                    }
                     if (wait > 0) {
                         Thread.sleep(wait / 1000000);
-                        catchupTime = 0;
                         continue;
                     } else {
-                        catchupTime = Math.min(1000000000, Math.abs(wait));
+                        catchupTime = Math.min(MAX_CATCHUP_BUFFER, catchupTime + Math.abs(wait));
                     }
 
                     if ( MinecraftServer.currentTick++ % SAMPLE_INTERVAL == 0 )

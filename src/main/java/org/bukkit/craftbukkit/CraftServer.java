@@ -1832,4 +1832,18 @@ public final class CraftServer implements Server {
     public UnsafeValues getUnsafe() {
         return CraftMagicNumbers.INSTANCE;
     }
+
+    private final Spigot spigot = new Spigot()
+    {
+        @Override
+        public double[] getTPS()
+        {
+            return MinecraftServer.getServer().recentTps;
+        }
+    };
+
+    public Spigot spigot()
+    {
+        return spigot;
+    }
 }
