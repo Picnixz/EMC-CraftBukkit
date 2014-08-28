@@ -110,6 +110,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     // Spigot start
     private static final int TPS = 20;
     private static final int TICK_TIME = 1000000000 / TPS;
+    private static final long MAX_CATCHUP_BUFFER = TICK_TIME * TPS * 60L;
     private static final int SAMPLE_INTERVAL = 100;
     public final double[] recentTps = new double[ 3 ];
     // Spigot end
@@ -465,18 +466,28 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 this.a(this.q);
 
                 // Spigot start
-                Arrays.fill( recentTps, 20 );
-                long lastTick = System.nanoTime(), catchupTime = 0, curTime, wait, tickSection = lastTick;
+                long start = System.nanoTime(), lastTick = start - TICK_TIME, catchupTime = 0, curTime, wait, tickSection = start;
                 while (this.isRunning) {
                     curTime = System.nanoTime();
-                    wait = TICK_TIME - (curTime - lastTick) - catchupTime;
+                    wait = TICK_TIME - (curTime - lastTick);
+                    if (wait > 0) {
+                        if (catchupTime < 2E6) {
+                            wait += Math.abs(catchupTime);
+                        }
+                        if (wait < catchupTime) {
+                            catchupTime -= wait;
+                            wait = 0;
+                        } else if (catchupTime > 2E6) {
+                            wait -= catchupTime;
+                            catchupTime -= catchupTime;
+                        }
+                    }
                     if (wait > 0) {
                         Thread.sleep(wait / 1000000);
-                        catchupTime = 0;
-                        continue;
-                    } else {
-                        catchupTime = Math.min(1000000000, Math.abs(wait));
+                        wait = TICK_TIME - (curTime - lastTick);
                     }
+
+                    catchupTime = Math.min(MAX_CATCHUP_BUFFER, catchupTime - wait);
 
                     if ( MinecraftServer.currentTick++ % SAMPLE_INTERVAL == 0 )
                     {
