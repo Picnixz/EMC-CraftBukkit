@@ -72,7 +72,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
             }
             // CraftBukkit end
 
-            if (packethandshakinginsetprotocol.d() > 5) {
+            if (packethandshakinginsetprotocol.d() > 5 && packethandshakinginsetprotocol.d() != 47) { // Spigot
                 chatcomponenttext = new ChatComponentText( java.text.MessageFormat.format( org.spigotmc.SpigotConfig.outdatedServerMessage, "1.7.10" ) ); // Spigot
                 this.b.handle(new PacketLoginOutDisconnect(chatcomponenttext), new GenericFutureListener[0]);
                 this.b.close(chatcomponenttext);
