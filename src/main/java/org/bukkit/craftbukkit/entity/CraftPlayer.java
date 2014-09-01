@@ -1174,12 +1174,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public void setAllowFlight(boolean value) {
+        boolean needsUpdate = getHandle().abilities.canFly != value; // Spigot
         if (isFlying() && !value) {
             getHandle().abilities.isFlying = false;
         }
 
         getHandle().abilities.canFly = value;
-        getHandle().updateAbilities();
+        if (needsUpdate) getHandle().updateAbilities(); // Spigot
     }
 
     @Override
