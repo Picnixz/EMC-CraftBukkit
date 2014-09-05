@@ -130,9 +130,9 @@ public class Explosion {
                     // CraftBukkit start
                     CraftEventFactory.entityDamage = source;
                     if (!entity.damageEntity(DamageSource.explosion(this), (float) ((int) ((d10 * d10 + d10) / 2.0D * 8.0D * (double) this.size + 1.0D)))) {
-                        CraftEventFactory.entityDamage = null;
-                        continue;
+
                     }
+                    CraftEventFactory.entityDamage = null;
                     // CraftBukkit end
                     double d11 = EnchantmentProtection.a(entity, d10);
 
@@ -203,6 +203,7 @@ public class Explosion {
                 j = chunkposition.y;
                 k = chunkposition.z;
                 block = this.world.getType(i, j, k);
+                world.spigotConfig.antiXrayInstance.updateNearbyBlocks(world, i, j, k); // Spigot
                 if (flag) {
                     double d0 = (double) ((float) i + this.world.random.nextFloat());
                     double d1 = (double) ((float) j + this.world.random.nextFloat());

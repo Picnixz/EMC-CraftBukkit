@@ -18,6 +18,7 @@ import java.io.PrintStream;
 import org.apache.logging.log4j.Level;
 
 import org.bukkit.craftbukkit.LoggerOutputStream;
+import org.bukkit.craftbukkit.SpigotTimings; // Spigot
 import org.bukkit.event.server.ServerCommandEvent;
 // CraftBukkit end
 
@@ -76,7 +77,16 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
         i.info("Loading properties");
         this.propertyManager = new PropertyManager(this.options); // CraftBukkit - CLI argument support
         this.n = new EULA(new File("eula.txt"));
-        if (!this.n.a()) {
+        // Spigot Start
+        boolean eulaAgreed = Boolean.getBoolean( "com.mojang.eula.agree" );
+        if ( eulaAgreed )
+        {
+            System.err.println( "You have used the Spigot command line EULA agreement flag." );
+            System.err.println( "By using this setting you are indicating your agreement to Mojang's EULA (https://account.mojang.com/documents/minecraft_eula)." );
+            System.err.println( "If you do not agree to the above EULA please stop your server and remove this flag immediately." );
+        }
+        // Spigot End
+        if (!this.n.a() && !eulaAgreed) {
             i.info("You need to agree to the EULA in order to run the server. Go to eula.txt for more info.");
             this.n.b();
             return false;
@@ -116,11 +126,17 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             if (this.L() < 0) {
                 this.setPort(this.propertyManager.getInt("server-port", 25565));
             }
+            // Spigot start
+            this.a((PlayerList) (new DedicatedPlayerList(this)));
+            org.spigotmc.SpigotConfig.init();
+            org.spigotmc.SpigotConfig.registerCommands();
+            // Spigot end
 
             i.info("Generating keypair");
             this.a(MinecraftEncryption.b());
             i.info("Starting Minecraft server on " + (this.getServerIp().length() == 0 ? "*" : this.getServerIp()) + ":" + this.L());
 
+        if (!org.spigotmc.SpigotConfig.lateBind) {
             try {
                 this.ai().a(inetaddress, this.L());
             } catch (Throwable ioexception) { // CraftBukkit - IOException -> Throwable
@@ -129,8 +145,13 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
                 i.warn("Perhaps a server is already running on that port?");
                 return false;
             }
+        }
 
-            this.a((PlayerList) (new DedicatedPlayerList(this))); // CraftBukkit
+            // Spigot Start - Move DedicatedPlayerList up and bring plugin loading from CraftServer to here
+            // this.a((PlayerList) (new DedicatedPlayerList(this))); // CraftBukkit
+            server.loadPlugins();
+            server.enablePlugins(org.bukkit.plugin.PluginLoadOrder.STARTUP);
+            // Spigot End
 
             if (!this.getOnlineMode()) {
                 i.warn("**** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!");
@@ -214,6 +235,16 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
                 }
                 // CraftBukkit end
 
+        if (org.spigotmc.SpigotConfig.lateBind) {
+            try {
+                this.ai().a(inetaddress, this.L());
+            } catch (Throwable ioexception) { // CraftBukkit - IOException -> Throwable
+                i.warn("**** FAILED TO BIND TO PORT!");
+                i.warn("The exception was: {}", new Object[] { ioexception.toString()});
+                i.warn("Perhaps a server is already running on that port?");
+                return false;
+            }
+        }
                 return true;
             }
         }
@@ -282,6 +313,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
     }
 
     public void aB() {
+        SpigotTimings.serverCommandTimer.startTiming(); // Spigot
         while (!this.j.isEmpty()) {
             ServerCommand servercommand = (ServerCommand) this.j.remove(0);
 
@@ -294,6 +326,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             this.server.dispatchServerCommand(this.console, servercommand);
             // CraftBukkit end
         }
+        SpigotTimings.serverCommandTimer.stopTiming(); // Spigot
     }
 
     public boolean X() {
@@ -389,6 +422,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
     }
 
     protected boolean aE() {
+        server.getLogger().info( "**** Beginning UUID conversion, this may take A LONG time ****"); // Spigot, let the user know whats up!
         boolean flag = false;
 
         int i;

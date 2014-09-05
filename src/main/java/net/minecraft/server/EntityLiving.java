@@ -16,6 +16,8 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 // CraftBukkit end
 
+import org.bukkit.craftbukkit.SpigotTimings; // Spigot
+
 public abstract class EntityLiving extends Entity {
 
     private static final UUID b = UUID.fromString("662A6B8D-DA3E-4C1C-8813-96EA6097278D");
@@ -82,6 +84,13 @@ public abstract class EntityLiving extends Entity {
     public int maxAirTicks = 300;
     ArrayList<org.bukkit.inventory.ItemStack> drops = null;
     // CraftBukkit end
+    // Spigot start
+    public void inactiveTick()
+    {
+        super.inactiveTick();
+        ++this.aU; // Above all the floats
+    }
+    // Spigot end
 
     public EntityLiving(World world) {
         super(world);
@@ -1357,6 +1366,7 @@ public abstract class EntityLiving extends Entity {
     }
 
     public void h() {
+        SpigotTimings.timerEntityBaseTick.startTiming(); // Spigot
         super.h();
         if (!this.world.isStatic) {
             int i = this.aZ();
@@ -1395,7 +1405,9 @@ public abstract class EntityLiving extends Entity {
             }
         }
 
+        SpigotTimings.timerEntityBaseTick.stopTiming(); // Spigot
         this.e();
+        SpigotTimings.timerEntityTickRest.startTiming(); // Spigot
         double d0 = this.locX - this.lastX;
         double d1 = this.locZ - this.lastZ;
         float f = (float) (d0 * d0 + d1 * d1);
@@ -1460,6 +1472,7 @@ public abstract class EntityLiving extends Entity {
 
         this.world.methodProfiler.b();
         this.aX += f2;
+        SpigotTimings.timerEntityTickRest.stopTiming(); // Spigot
     }
 
     protected float f(float f, float f1) {
@@ -1524,6 +1537,7 @@ public abstract class EntityLiving extends Entity {
         }
 
         this.world.methodProfiler.a("ai");
+        SpigotTimings.timerEntityAI.startTiming(); // Spigot
         if (this.bh()) {
             this.bc = false;
             this.bd = 0.0F;
@@ -1541,6 +1555,7 @@ public abstract class EntityLiving extends Entity {
                 this.aO = this.yaw;
             }
         }
+        SpigotTimings.timerEntityAI.stopTiming(); // Spigot
 
         this.world.methodProfiler.b();
         this.world.methodProfiler.a("jump");
@@ -1562,11 +1577,15 @@ public abstract class EntityLiving extends Entity {
         this.bd *= 0.98F;
         this.be *= 0.98F;
         this.bf *= 0.9F;
+        SpigotTimings.timerEntityAIMove.startTiming(); // Spigot
         this.e(this.bd, this.be);
+        SpigotTimings.timerEntityAIMove.stopTiming(); // Spigot
         this.world.methodProfiler.b();
         this.world.methodProfiler.a("push");
         if (!this.world.isStatic) {
+            SpigotTimings.timerEntityAICollision.startTiming(); // Spigot
             this.bo();
+            SpigotTimings.timerEntityAICollision.stopTiming(); // Spigot
         }
 
         this.world.methodProfiler.b();
@@ -1577,8 +1596,10 @@ public abstract class EntityLiving extends Entity {
     protected void bo() {
         List list = this.world.getEntities(this, this.boundingBox.grow(0.20000000298023224D, 0.0D, 0.20000000298023224D));
 
-        if (list != null && !list.isEmpty()) {
+        if (this.R() && list != null && !list.isEmpty()) { // Spigot: Add this.R() condition
+            numCollisions -= world.spigotConfig.maxCollisionsPerEntity; // Spigot
             for (int i = 0; i < list.size(); ++i) {
+                if (numCollisions > world.spigotConfig.maxCollisionsPerEntity) { break; } // Spigot
                 Entity entity = (Entity) list.get(i);
 
                 // TODO better check now?
@@ -1589,9 +1610,12 @@ public abstract class EntityLiving extends Entity {
                 // CraftBukkit end
 
                 if (entity.S()) {
+                    entity.numCollisions++; // Spigot
+                    numCollisions++; // Spigot
                     this.o(entity);
                 }
             }
+            numCollisions = 0; // Spigot
         }
     }
 

@@ -41,6 +41,7 @@ import org.bukkit.Statistic.Type;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.CreatureSpawner;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -150,6 +151,22 @@ public class CraftEventFactory {
     }
 
     /**
+     * Mob spawner event
+     */
+    public static SpawnerSpawnEvent callSpawnerSpawnEvent(Entity spawnee, int spawnerX, int spawnerY, int spawnerZ) {
+        org.bukkit.craftbukkit.entity.CraftEntity entity = spawnee.getBukkitEntity();
+        BlockState state = entity.getWorld().getBlockAt(spawnerX, spawnerY, spawnerZ).getState();
+
+        if (!(state instanceof CreatureSpawner)) {
+            state = null;
+        }
+
+        SpawnerSpawnEvent event = new SpawnerSpawnEvent(entity, (CreatureSpawner) state);
+        entity.getServer().getPluginManager().callEvent(event);
+        return event;
+    }
+
+    /**
      * Bucket methods
      */
     public static PlayerBucketEmptyEvent callPlayerBucketEmptyEvent(EntityHuman who, int clickedX, int clickedY, int clickedZ, int clickedFace, ItemStack itemInHand) {
@@ -190,7 +207,7 @@ public class CraftEventFactory {
      */
     public static PlayerInteractEvent callPlayerInteractEvent(EntityHuman who, Action action, ItemStack itemstack) {
         if (action != Action.LEFT_CLICK_AIR && action != Action.RIGHT_CLICK_AIR) {
-            throw new AssertionError(String.format("%s performing %s with %s", who, action, itemstack));
+            throw new IllegalArgumentException(String.format("%s performing %s with %s", who, action, itemstack)); // Spigot
         }
         return callPlayerInteractEvent(who, action, 0, 256, 0, 0, itemstack);
     }
@@ -467,7 +484,7 @@ public class CraftEventFactory {
             if (source == DamageSource.CACTUS) {
                 cause = DamageCause.CONTACT;
             } else {
-                throw new AssertionError(String.format("Unhandled damage of %s by %s from %s", entity, damager, source.translationIndex));
+                throw new RuntimeException(String.format("Unhandled damage of %s by %s from %s", entity, damager, source.translationIndex)); // Spigot
             }
             EntityDamageEvent event = callEvent(new EntityDamageByBlockEvent(damager, entity.getBukkitEntity(), cause, modifiers, modifierFunctions));
             if (!event.isCancelled()) {
@@ -485,7 +502,7 @@ public class CraftEventFactory {
             } else if (source == DamageSource.FALL) {
                 cause = DamageCause.FALL;
             } else {
-                throw new AssertionError(String.format("Unhandled damage of %s by %s from %s", entity, damager.getHandle(), source.translationIndex));
+                throw new RuntimeException(String.format("Unhandled damage of %s by %s from %s", entity, damager.getHandle(), source.translationIndex)); // Spigot
             }
             EntityDamageEvent event = callEvent(new EntityDamageByEntityEvent(damager, entity.getBukkitEntity(), cause, modifiers, modifierFunctions));
             if (!event.isCancelled()) {
@@ -523,7 +540,7 @@ public class CraftEventFactory {
             return callEntityDamageEvent(null, entity, cause, modifiers, modifierFunctions);
         }
 
-        throw new AssertionError(String.format("Unhandled damage of %s from %s", entity, source.translationIndex));
+        throw new RuntimeException(String.format("Unhandled damage of %s from %s", entity, source.translationIndex)); // Spigot
     }
 
     private static EntityDamageEvent callEntityDamageEvent(Entity damager, Entity damagee, DamageCause cause, Map<DamageModifier, Double> modifiers, Map<DamageModifier, Function<? super Double, Double>> modifierFunctions) {

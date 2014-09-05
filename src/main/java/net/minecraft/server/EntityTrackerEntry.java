@@ -134,11 +134,11 @@ public class EntityTrackerEntry {
                 if (this.m > 0 || this.tracker instanceof EntityArrow) {
                     if (j1 >= -128 && j1 < 128 && k1 >= -128 && k1 < 128 && l1 >= -128 && l1 < 128 && this.v <= 400 && !this.x) {
                         if (flag && flag1) {
-                            object = new PacketPlayOutRelEntityMoveLook(this.tracker.getId(), (byte) j1, (byte) k1, (byte) l1, (byte) l, (byte) i1);
+                            object = new PacketPlayOutRelEntityMoveLook(this.tracker.getId(), (byte) j1, (byte) k1, (byte) l1, (byte) l, (byte) i1, tracker.onGround); // Spigot - protocol patch
                         } else if (flag) {
-                            object = new PacketPlayOutRelEntityMove(this.tracker.getId(), (byte) j1, (byte) k1, (byte) l1);
+                            object = new PacketPlayOutRelEntityMove(this.tracker.getId(), (byte) j1, (byte) k1, (byte) l1, tracker.onGround); // Spigot - protocol patch
                         } else if (flag1) {
-                            object = new PacketPlayOutEntityLook(this.tracker.getId(), (byte) l, (byte) i1);
+                            object = new PacketPlayOutEntityLook(this.tracker.getId(), (byte) l, (byte) i1, tracker.onGround); // Spigot - protocol patch
                         }
                     } else {
                         this.v = 0;
@@ -147,7 +147,7 @@ public class EntityTrackerEntry {
                             this.scanPlayers(new java.util.ArrayList(this.trackedPlayers));
                         }
                         // CraftBukkit end
-                        object = new PacketPlayOutEntityTeleport(this.tracker.getId(), i, j, k, (byte) l, (byte) i1);
+                        object = new PacketPlayOutEntityTeleport(this.tracker.getId(), i, j, k, (byte) l, (byte) i1, tracker.onGround); // Spigot - protocol patch
                     }
                 }
 
@@ -191,7 +191,7 @@ public class EntityTrackerEntry {
                 boolean flag2 = Math.abs(i - this.yRot) >= 4 || Math.abs(j - this.xRot) >= 4;
 
                 if (flag2) {
-                    this.broadcast(new PacketPlayOutEntityLook(this.tracker.getId(), (byte) i, (byte) j));
+                    this.broadcast(new PacketPlayOutEntityLook(this.tracker.getId(), (byte) i, (byte) j, tracker.onGround)); // Spigot - protocol patch
                     this.yRot = i;
                     this.xRot = j;
                 }
@@ -299,6 +299,7 @@ public class EntityTrackerEntry {
     }
 
     public void updatePlayer(EntityPlayer entityplayer) {
+        org.spigotmc.AsyncCatcher.catchOp( "player tracker update"); // Spigot
         if (entityplayer != this.tracker) {
             double d0 = entityplayer.locX - (double) (this.xLoc / 32);
             double d1 = entityplayer.locZ - (double) (this.zLoc / 32);
@@ -318,6 +319,13 @@ public class EntityTrackerEntry {
 
                     this.trackedPlayers.add(entityplayer);
                     Packet packet = this.c();
+
+                    // Spigot start - protocol patch
+                    if ( tracker instanceof EntityPlayer )
+                    {
+                        entityplayer.playerConnection.sendPacket( PacketPlayOutPlayerInfo.addPlayer( (EntityPlayer) tracker ) );
+                    }
+                    // Spigot end
 
                     entityplayer.playerConnection.sendPacket(packet);
                     if (!this.tracker.getDataWatcher().d()) {
@@ -515,6 +523,7 @@ public class EntityTrackerEntry {
     }
 
     public void clear(EntityPlayer entityplayer) {
+        org.spigotmc.AsyncCatcher.catchOp( "player tracker clear"); // Spigot
         if (this.trackedPlayers.contains(entityplayer)) {
             this.trackedPlayers.remove(entityplayer);
             entityplayer.d(this.tracker);

@@ -85,6 +85,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.MobEffectList;
 import net.minecraft.server.PropertyManager;
 import net.minecraft.server.ServerCommand;
+import net.minecraft.server.RegionFile;
+import net.minecraft.server.RegionFileCache;
 import net.minecraft.server.ServerNBTManager;
 import net.minecraft.server.WorldLoaderServer;
 import net.minecraft.server.WorldManager;
@@ -118,6 +120,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.command.defaults.VanillaCommand;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -317,14 +320,16 @@ public final class CraftServer implements Server {
         loadIcon();
 
         updater = new AutoUpdater(new BukkitDLUpdaterService(configuration.getString("auto-updater.host")), getLogger(), configuration.getString("auto-updater.preferred-channel"));
-        updater.setEnabled(configuration.getBoolean("auto-updater.enabled"));
+        updater.setEnabled(false); // Spigot
         updater.setSuggestChannels(configuration.getBoolean("auto-updater.suggest-channels"));
         updater.getOnBroken().addAll(configuration.getStringList("auto-updater.on-broken"));
         updater.getOnUpdate().addAll(configuration.getStringList("auto-updater.on-update"));
         updater.check(serverVersion);
 
-        loadPlugins();
-        enablePlugins(PluginLoadOrder.STARTUP);
+        // Spigot Start - Moved to old location of new DedicatedPlayerList in DedicatedServer
+        // loadPlugins();
+        // enablePlugins(PluginLoadOrder.STARTUP);
+        // Spigot End
     }
 
     public boolean getCommandBlockOverride(String command) {
@@ -391,8 +396,11 @@ public final class CraftServer implements Server {
         }
 
         if (type == PluginLoadOrder.POSTWORLD) {
+            // Spigot start - Allow vanilla commands to be forced to be the main command
+            setVanillaCommands(true);
             commandMap.setFallbackCommands();
-            setVanillaCommands();
+            setVanillaCommands(false);
+            // Spigot end
             commandMap.registerServerAliases();
             loadCustomPermissions();
             DefaultPermissions.registerCorePermissions();
@@ -404,51 +412,64 @@ public final class CraftServer implements Server {
         pluginManager.disablePlugins();
     }
 
-    private void setVanillaCommands() {
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandAchievement(), "/achievement give <stat_name> [player]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandBan(), "/ban <playername> [reason]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandBanIp(), "/ban-ip <ip-address|playername>"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandBanList(), "/banlist [ips]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandClear(), "/clear <playername> [item] [metadata]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandGamemodeDefault(), "/defaultgamemode <mode>"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandDeop(), "/deop <playername>"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandDifficulty(), "/difficulty <new difficulty>"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandEffect(), "/effect <player> <effect|clear> [seconds] [amplifier]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandEnchant(), "/enchant <playername> <enchantment ID> [enchantment level]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandGamemode(), "/gamemode <mode> [player]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandGamerule(), "/gamerule <rulename> [true|false]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandGive(), "/give <playername> <item> [amount] [metadata] [dataTag]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandHelp(), "/help [page|commandname]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandIdleTimeout(), "/setidletimeout <Minutes until kick>"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandKick(), "/kick <playername> [reason]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandKill(), "/kill [playername]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandList(), "/list"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandMe(), "/me <actiontext>"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandOp(), "/op <playername>"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandPardon(), "/pardon <playername>"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandPardonIP(), "/pardon-ip <ip-address>"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandPlaySound(), "/playsound <sound> <playername> [x] [y] [z] [volume] [pitch] [minimumVolume]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandSay(), "/say <message>"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandScoreboard(), "/scoreboard"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandSeed(), "/seed"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandSetBlock(), "/setblock <x> <y> <z> <tilename> [datavalue] [oldblockHandling] [dataTag]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandSetWorldSpawn(), "/setworldspawn [x] [y] [z]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandSpawnpoint(), "/spawnpoint <playername> [x] [y] [z]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandSpreadPlayers(), "/spreadplayers <x> <z> [spreadDistance] [maxRange] [respectTeams] <playernames>"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandSummon(), "/summon <EntityName> [x] [y] [z] [dataTag]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandTp(), "/tp [player] <target>\n/tp [player] <x> <y> <z>"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandTell(), "/tell <playername> <message>"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandTellRaw(), "/tellraw <playername> <raw message>"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandTestFor(), "/testfor <playername | selector> [dataTag]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandTestForBlock(), "/testforblock <x> <y> <z> <tilename> [datavalue] [dataTag]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandTime(), "/time set <value>\n/time add <value>"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandToggleDownfall(), "/toggledownfall"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandWeather(), "/weather <clear/rain/thunder> [duration in seconds]"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandWhitelist(), "/whitelist (add|remove) <player>\n/whitelist (on|off|list|reload)"));
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandXp(), "/xp <amount> [player]\n/xp <amount>L [player]"));
-        // This is what is in the lang file, I swear.
-        commandMap.register("minecraft", new VanillaCommandWrapper(new CommandNetstat(), "/list"));
+    // Spigot start
+    private void tryRegister(VanillaCommandWrapper commandWrapper, boolean first) {
+        if (org.spigotmc.SpigotConfig.replaceCommands.contains( commandWrapper.getName() ) ) {
+            if (first) {
+                commandMap.register( "minecraft", commandWrapper );
+            }
+        } else if (!first) {
+            commandMap.register( "minecraft", commandWrapper );
+        }
     }
+
+    private void setVanillaCommands(boolean first)
+    {
+        tryRegister( new VanillaCommandWrapper( new CommandAchievement(), "/achievement give <stat_name> [player]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandBan(), "/ban <playername> [reason]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandBanIp(), "/ban-ip <ip-address|playername>" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandBanList(), "/banlist [ips]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandClear(), "/clear <playername> [item] [metadata]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandGamemodeDefault(), "/defaultgamemode <mode>" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandDeop(), "/deop <playername>" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandDifficulty(), "/difficulty <new difficulty>" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandEffect(), "/effect <player> <effect|clear> [seconds] [amplifier]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandEnchant(), "/enchant <playername> <enchantment ID> [enchantment level]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandGamemode(), "/gamemode <mode> [player]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandGamerule(), "/gamerule <rulename> [true|false]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandGive(), "/give <playername> <item> [amount] [metadata] [dataTag]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandHelp(), "/help [page|commandname]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandIdleTimeout(), "/setidletimeout <Minutes until kick>" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandKick(), "/kick <playername> [reason]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandKill(), "/kill [playername]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandList(), "/list" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandMe(), "/me <actiontext>" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandOp(), "/op <playername>" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandPardon(), "/pardon <playername>" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandPardonIP(), "/pardon-ip <ip-address>" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandPlaySound(), "/playsound <sound> <playername> [x] [y] [z] [volume] [pitch] [minimumVolume]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandSay(), "/say <message>" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandScoreboard(), "/scoreboard" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandSeed(), "/seed" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandSetBlock(), "/setblock <x> <y> <z> <tilename> [datavalue] [oldblockHandling] [dataTag]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandSetWorldSpawn(), "/setworldspawn [x] [y] [z]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandSpawnpoint(), "/spawnpoint <playername> [x] [y] [z]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandSpreadPlayers(), "/spreadplayers <x> <z> [spreadDistance] [maxRange] [respectTeams] <playernames>" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandSummon(), "/summon <EntityName> [x] [y] [z] [dataTag]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandTp(), "/tp [player] <target>\n/tp [player] <x> <y> <z>" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandTell(), "/tell <playername> <message>" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandTellRaw(), "/tellraw <playername> <raw message>" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandTestFor(), "/testfor <playername | selector> [dataTag]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandTestForBlock(), "/testforblock <x> <y> <z> <tilename> [datavalue] [dataTag]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandTime(), "/time set <value>\n/time add <value>" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandToggleDownfall(), "/toggledownfall" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandWeather(), "/weather <clear/rain/thunder> [duration in seconds]" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandWhitelist(), "/whitelist (add|remove) <player>\n/whitelist (on|off|list|reload)" ), first );
+        tryRegister( new VanillaCommandWrapper( new CommandXp(), "/xp <amount> [player]\n/xp <amount>L [player]" ), first );
+        // This is what is in the lang file, I swear.
+        tryRegister( new VanillaCommandWrapper(new CommandNetstat(), "/list"), first );
+    }
+    // Spigot end
 
     private void loadPlugin(Plugin plugin) {
         try {
@@ -674,7 +695,13 @@ public final class CraftServer implements Server {
 
     @Override
     public long getConnectionThrottle() {
-        return this.configuration.getInt("settings.connection-throttle");
+        // Spigot Start - Automatically set connection throttle for bungee configurations
+        if (org.spigotmc.SpigotConfig.bungee) {
+            return -1;
+        } else {
+            return this.configuration.getInt("settings.connection-throttle");
+        }
+        // Spigot End
     }
 
     @Override
@@ -741,11 +768,7 @@ public final class CraftServer implements Server {
             return true;
         }
 
-        if (sender instanceof Player) {
-            sender.sendMessage("Unknown command. Type \"/help\" for help.");
-        } else {
-            sender.sendMessage("Unknown command. Type \"help\" for help.");
-        }
+        sender.sendMessage(org.spigotmc.SpigotConfig.unknownCommandMessage);
 
         return false;
     }
@@ -789,6 +812,7 @@ public final class CraftServer implements Server {
             logger.log(Level.WARNING, "Failed to load banned-players.json, " + ex.getMessage());
         }
 
+        org.spigotmc.SpigotConfig.init(); // Spigot
         for (WorldServer world : console.worlds) {
             world.difficulty = difficulty;
             world.setSpawnFlags(monsters, animals);
@@ -803,11 +827,14 @@ public final class CraftServer implements Server {
             } else {
                 world.ticksPerMonsterSpawns = this.getTicksPerMonsterSpawns();
             }
+            world.spigotConfig.init(); // Spigot
         }
 
         pluginManager.clearPlugins();
         commandMap.clearCommands();
         resetRecipes();
+        org.spigotmc.SpigotConfig.registerCommands(); // Spigot
+
         overrideAllCommandBlockCommands = commandsConfiguration.getStringList("command-block-overrides").contains("*");
 
         int pollCount = 0;
@@ -1055,6 +1082,30 @@ public final class CraftServer implements Server {
 
         worlds.remove(world.getName().toLowerCase());
         console.worlds.remove(console.worlds.indexOf(handle));
+
+        File parentFolder = world.getWorldFolder().getAbsoluteFile();
+
+        // Synchronized because access to RegionFileCache.a is guarded by this lock.
+        synchronized (RegionFileCache.class) {
+            // RegionFileCache.a should be RegionFileCache.cache
+            Iterator<Map.Entry<File, RegionFile>> i = RegionFileCache.a.entrySet().iterator();
+            while(i.hasNext()) {
+                Map.Entry<File, RegionFile> entry = i.next();
+                File child = entry.getKey().getAbsoluteFile();
+                while (child != null) {
+                    if (child.equals(parentFolder)) {
+                        i.remove();
+                        try {
+                            entry.getValue().c(); // Should be RegionFile.close();
+                        } catch (IOException ex) {
+                            getLogger().log(Level.SEVERE, null, ex);
+                        }
+                        break;
+                    }
+                    child = child.getParentFile();
+                }
+            }
+        }
 
         return true;
     }
@@ -1341,16 +1392,18 @@ public final class CraftServer implements Server {
     @Deprecated
     public OfflinePlayer getOfflinePlayer(String name) {
         Validate.notNull(name, "Name cannot be null");
-
-        // If the name given cannot ever be a valid username give a dummy return, for scoreboard plugins
-        if (!validUserPattern.matcher(name).matches()) {
-            return new CraftOfflinePlayer(this, new GameProfile(invalidUserUUID, name));
-        }
+        com.google.common.base.Preconditions.checkArgument( !org.apache.commons.lang.StringUtils.isBlank( name ), "Name cannot be blank" ); // Spigot
 
         OfflinePlayer result = getPlayerExact(name);
         if (result == null) {
-            // This is potentially blocking :(
-            GameProfile profile = MinecraftServer.getServer().getUserCache().getProfile(name);
+            // Spigot Start
+            GameProfile profile = null;
+            // Only fetch an online UUID in online mode
+            if ( MinecraftServer.getServer().getOnlineMode() || org.spigotmc.SpigotConfig.bungee )
+            {
+                profile = MinecraftServer.getServer().getUserCache().getProfile( name );
+            }
+            // Spigot end
             if (profile == null) {
                 // Make an OfflinePlayer using an offline mode UUID since the name has no profile
                 result = getOfflinePlayer(new GameProfile(UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(Charsets.UTF_8)), name));
@@ -1666,6 +1719,13 @@ public final class CraftServer implements Server {
     }
 
     public List<String> tabCompleteCommand(Player player, String message) {
+        // Spigot Start
+		if ( (org.spigotmc.SpigotConfig.tabComplete < 0 || message.length() <= org.spigotmc.SpigotConfig.tabComplete) && !message.contains( " " ) )
+        {
+            return ImmutableList.of();
+        }
+        // Spigot End
+
         List<String> completions = null;
         try {
             completions = getCommandMap().tabComplete(player, message.substring(1));
@@ -1767,5 +1827,20 @@ public final class CraftServer implements Server {
     @Override
     public UnsafeValues getUnsafe() {
         return CraftMagicNumbers.INSTANCE;
+    }
+
+    private final Spigot spigot = new Spigot()
+    {
+
+        @Override
+        public YamlConfiguration getConfig()
+        {
+            return org.spigotmc.SpigotConfig.config;
+        }
+    };
+
+    public Spigot spigot()
+    {
+        return spigot;
     }
 }

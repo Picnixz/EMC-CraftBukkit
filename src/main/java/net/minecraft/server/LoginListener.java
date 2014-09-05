@@ -9,6 +9,8 @@ import javax.crypto.SecretKey;
 
 import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
+import net.minecraft.util.com.mojang.authlib.properties.Property;
+import net.minecraft.util.io.netty.util.concurrent.Future;
 import net.minecraft.util.io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.util.org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
@@ -59,10 +61,38 @@ public class LoginListener implements PacketLoginInListener {
         }
     }
 
+    // Spigot start
+    public void initUUID()
+    {
+        UUID uuid;
+        if ( networkManager.spoofedUUID != null )
+        {
+            uuid = networkManager.spoofedUUID;
+        } else
+        {
+            uuid = UUID.nameUUIDFromBytes( ( "OfflinePlayer:" + this.i.getName() ).getBytes( Charsets.UTF_8 ) );
+        }
+
+        this.i = new GameProfile( uuid, this.i.getName() );
+
+        if (networkManager.spoofedProfile != null)
+        {
+            for ( Property property : networkManager.spoofedProfile )
+            {
+                this.i.getProperties().put( property.getName(), property );
+            }
+        }
+    }
+    // Spigot end
+
     public void c() {
+        // Spigot start - Moved to initUUID
+        /*
         if (!this.i.isComplete()) {
             this.i = this.a(this.i);
         }
+        */
+        // Spigot end
 
         // CraftBukkit start - fire PlayerLoginEvent
         EntityPlayer s = this.server.getPlayerList().attemptLogin(this, this.i, this.hostname);
@@ -72,6 +102,19 @@ public class LoginListener implements PacketLoginInListener {
             // CraftBukkit end
         } else {
             this.g = EnumProtocolState.e;
+            // Spigot start
+            if ( networkManager.getVersion() >= 27 )
+            {
+                this.networkManager.handle( new org.spigotmc.ProtocolInjector.PacketLoginCompression( 256 ), new GenericFutureListener()
+                {
+                    @Override
+                    public void operationComplete(Future future) throws Exception
+                    {
+                        networkManager.enableCompression();
+                    }
+                } );
+            }
+            // Spigot end
             this.networkManager.handle(new PacketLoginOutSuccess(this.i), new GenericFutureListener[0]);
             this.server.getPlayerList().a(this.networkManager, this.server.getPlayerList().processLogin(this.i, s)); // CraftBukkit - add player reference
         }
@@ -97,7 +140,7 @@ public class LoginListener implements PacketLoginInListener {
             this.g = EnumProtocolState.KEY;
             this.networkManager.handle(new PacketLoginOutEncryptionBegin(this.j, this.server.K().getPublic(), this.e), new GenericFutureListener[0]);
         } else {
-            this.g = EnumProtocolState.READY_TO_ACCEPT;
+            (new ThreadPlayerLookupUUID(this, "User Authenticator #" + b.incrementAndGet())).start(); // Spigot
         }
     }
 

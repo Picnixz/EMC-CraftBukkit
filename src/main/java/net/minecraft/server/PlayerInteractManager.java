@@ -173,6 +173,7 @@ public class PlayerInteractManager {
                     this.o = i1;
                 }
             }
+            world.spigotConfig.antiXrayInstance.updateNearbyBlocks(world, i, j, k); // Spigot
         }
     }
 
@@ -326,6 +327,13 @@ public class PlayerInteractManager {
         int i = itemstack.count;
         int j = itemstack.getData();
         ItemStack itemstack1 = itemstack.a(world, entityhuman);
+
+        // Spigot start - protocol patch
+        if ( itemstack1 != null && itemstack1.getItem() == Items.WRITTEN_BOOK )
+        {
+            player.playerConnection.sendPacket( new PacketPlayOutCustomPayload( "MC|BOpen", new byte[0] ) );
+        }
+        // Spigot end
 
         if (itemstack1 == itemstack && (itemstack1 == null || itemstack1.count == i && itemstack1.n() <= 0 && itemstack1.getData() == j)) {
             return false;

@@ -93,6 +93,10 @@ public abstract class EntityInsentient extends EntityLiving {
         super.c();
         this.datawatcher.a(11, Byte.valueOf((byte) 0));
         this.datawatcher.a(10, "");
+        // Spigot start - protocol patch
+        this.datawatcher.a(3, Byte.valueOf((byte) 0));
+        this.datawatcher.a(2, "");
+        // Spigot end
     }
 
     public int q() {
@@ -400,6 +404,12 @@ public abstract class EntityInsentient extends EntityLiving {
         this.world.methodProfiler.a("checkDespawn");
         this.w();
         this.world.methodProfiler.b();
+        // Spigot Start
+        if ( this.fromMobSpawner )
+        {
+            return;
+        }
+        // Spigot End
         this.world.methodProfiler.a("sensing");
         this.bq.a();
         this.world.methodProfiler.b();
@@ -727,6 +737,7 @@ public abstract class EntityInsentient extends EntityLiving {
 
     public void setCustomName(String s) {
         this.datawatcher.watch(10, s);
+        this.datawatcher.watch(2, s); // Spigot - protocol patch
     }
 
     public String getCustomName() {
@@ -739,6 +750,7 @@ public abstract class EntityInsentient extends EntityLiving {
 
     public void setCustomNameVisible(boolean flag) {
         this.datawatcher.watch(11, Byte.valueOf((byte) (flag ? 1 : 0)));
+        this.datawatcher.watch(3, Byte.valueOf((byte) (flag ? 1 : 0))); // Spigot - protocol patch
     }
 
     public boolean getCustomNameVisible() {

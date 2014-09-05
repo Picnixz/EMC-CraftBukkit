@@ -54,7 +54,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             }
         } catch (IOException ioexception) {
             ioexception.printStackTrace();
-            throw new RuntimeException("Failed to check session lock, aborting");
+            throw new RuntimeException("Failed to check session lock for world located at " + this.baseDir + ", aborting. Stop the server and delete the session.lock in this world to prevent further issues."); // Spigot
         }
     }
 
@@ -69,13 +69,13 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
 
             try {
                 if (datainputstream.readLong() != this.sessionId) {
-                    throw new ExceptionWorldConflict("The save is being accessed from another location, aborting");
+                    throw new ExceptionWorldConflict("The save for world located at " + this.baseDir + " is being accessed from another location, aborting");  // Spigot
                 }
             } finally {
                 datainputstream.close();
             }
         } catch (IOException ioexception) {
-            throw new ExceptionWorldConflict("Failed to check session lock, aborting");
+            throw new ExceptionWorldConflict("Failed to check session lock for world located at " + this.baseDir + ", aborting. Stop the server and delete the session.lock in this world to prevent further issues."); // Spigot
         }
     }
 
@@ -196,10 +196,28 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
 
         try {
             File file1 = new File(this.playerDir, entityhuman.getUniqueID().toString() + ".dat");
+            // Spigot Start
+            boolean usingWrongFile = false;
+            if ( !file1.exists() )
+            {
+                file1 = new File( this.playerDir, UUID.nameUUIDFromBytes( ( "OfflinePlayer:" + entityhuman.getName() ).getBytes( "UTF-8" ) ).toString() + ".dat");
+                if ( file1.exists() )
+                {
+                    usingWrongFile = true;
+                    org.bukkit.Bukkit.getServer().getLogger().warning( "Using offline mode UUID file for player " + entityhuman.getName() + " as it is the only copy we can find." );
+                }
+            }
+            // Spigot End
 
             if (file1.exists() && file1.isFile()) {
                 nbttagcompound = NBTCompressedStreamTools.a((InputStream) (new FileInputStream(file1)));
             }
+            // Spigot Start
+            if ( usingWrongFile )
+            {
+                file1.renameTo( new File( file1.getPath() + ".offline-read" ) );
+            }
+            // Spigot End
         } catch (Exception exception) {
             a.warn("Failed to load player data for " + entityhuman.getName());
         }

@@ -22,14 +22,15 @@ public class PacketPlayOutMapChunkBulk extends Packet {
         @Override
         protected Deflater initialValue() {
             // Don't use higher compression level, slows things down too much
-            return new Deflater(6);
+            return new Deflater(4); // Spigot 6 -> 4
         }
     };
     // CraftBukkit end
+    private World world; // Spigot
 
     public PacketPlayOutMapChunkBulk() {}
 
-    public PacketPlayOutMapChunkBulk(List list) {
+    public PacketPlayOutMapChunkBulk(List list, int version) {
         int i = list.size();
 
         this.a = new int[i];
@@ -42,8 +43,11 @@ public class PacketPlayOutMapChunkBulk extends Packet {
 
         for (int k = 0; k < i; ++k) {
             Chunk chunk = (Chunk) list.get(k);
-            ChunkMap chunkmap = PacketPlayOutMapChunk.a(chunk, true, '\uffff');
+            ChunkMap chunkmap = PacketPlayOutMapChunk.a(chunk, true, '\uffff', version);
 
+            // Spigot start
+            world = chunk.world;
+            /*
             if (buildBuffer.length < j + chunkmap.a.length) {
                 byte[] abyte = new byte[j + chunkmap.a.length];
 
@@ -52,6 +56,8 @@ public class PacketPlayOutMapChunkBulk extends Packet {
             }
 
             System.arraycopy(chunkmap.a, 0, buildBuffer, j, chunkmap.a.length);
+            */
+            // Spigot end
             j += chunkmap.a.length;
             this.a[k] = chunk.locX;
             this.b[k] = chunk.locZ;
@@ -79,6 +85,22 @@ public class PacketPlayOutMapChunkBulk extends Packet {
         if (this.buffer != null) {
             return;
         }
+        // Spigot start
+        int finalBufferSize = 0;
+        // Obfuscate all sections
+        for (int i = 0; i < a.length; i++) {
+            world.spigotConfig.antiXrayInstance.obfuscate(a[i], b[i], c[i], inflatedBuffers[i], world, false);
+            finalBufferSize += inflatedBuffers[i].length;
+        }
+
+        // Now it's time to efficiently copy the chunk to the build buffer
+        buildBuffer = new byte[finalBufferSize];
+        int bufferLocation = 0;
+        for (int i = 0; i < a.length; i++) {
+            System.arraycopy(inflatedBuffers[i], 0, buildBuffer, bufferLocation, inflatedBuffers[i].length);
+            bufferLocation += inflatedBuffers[i].length;
+        }
+        // Spigot end
 
         Deflater deflater = localDeflater.get();
         deflater.reset();
@@ -152,17 +174,34 @@ public class PacketPlayOutMapChunkBulk extends Packet {
     }
 
     public void b(PacketDataSerializer packetdataserializer) throws IOException { // CraftBukkit - throws IOException
-        compress(); // CraftBukkit
-        packetdataserializer.writeShort(this.a.length);
-        packetdataserializer.writeInt(this.size);
-        packetdataserializer.writeBoolean(this.h);
-        packetdataserializer.writeBytes(this.buffer, 0, this.size);
+        if ( packetdataserializer.version < 27 )
+        {
+            compress(); // CraftBukkit
+            packetdataserializer.writeShort( this.a.length );
+            packetdataserializer.writeInt( this.size );
+            packetdataserializer.writeBoolean( this.h );
+            packetdataserializer.writeBytes( this.buffer, 0, this.size );
 
-        for (int i = 0; i < this.a.length; ++i) {
-            packetdataserializer.writeInt(this.a[i]);
-            packetdataserializer.writeInt(this.b[i]);
-            packetdataserializer.writeShort((short) (this.c[i] & '\uffff'));
-            packetdataserializer.writeShort((short) (this.d[i] & '\uffff'));
+            for (int i = 0; i < this.a.length; ++i) {
+                packetdataserializer.writeInt(this.a[i]);
+                packetdataserializer.writeInt(this.b[i]);
+                packetdataserializer.writeShort((short) (this.c[i] & '\uffff'));
+                packetdataserializer.writeShort( (short) ( this.d[i] & '\uffff' ) );
+            }
+        } else
+        {
+            packetdataserializer.writeBoolean( this.h );
+            packetdataserializer.b( this.a.length );
+
+            for (int i = 0; i < this.a.length; ++i) {
+                packetdataserializer.writeInt(this.a[i]);
+                packetdataserializer.writeInt(this.b[i]);
+                packetdataserializer.writeShort((short) (this.c[i] & '\uffff'));
+            }
+            for (int i = 0; i < this.a.length; ++i) {
+                world.spigotConfig.antiXrayInstance.obfuscate(a[i], b[i], c[i], inflatedBuffers[i], world, true);
+                packetdataserializer.writeBytes( inflatedBuffers[i] );
+            }
         }
     }
 

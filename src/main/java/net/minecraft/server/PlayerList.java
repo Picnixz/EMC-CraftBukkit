@@ -36,6 +36,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.util.Vector;
+import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 // CraftBukkit end
 
 public abstract class PlayerList {
@@ -98,6 +99,19 @@ public abstract class PlayerList {
         if (networkmanager.getSocketAddress() != null) {
             s1 = networkmanager.getSocketAddress().toString();
         }
+
+        // Spigot start - spawn location event
+        Player bukkitPlayer = entityplayer.getBukkitEntity();
+        PlayerSpawnLocationEvent ev = new PlayerSpawnLocationEvent(bukkitPlayer, bukkitPlayer.getLocation());
+        Bukkit.getPluginManager().callEvent(ev);
+
+        Location loc = ev.getSpawnLocation();
+        WorldServer world = ((CraftWorld) loc.getWorld()).getHandle();
+
+        entityplayer.spawnIn(world);
+        entityplayer.setPosition(loc.getX(), loc.getY(), loc.getZ());
+        entityplayer.b(loc.getYaw(), loc.getPitch()); // should be setYawAndPitch
+        // Spigot end
 
         // CraftBukkit - Moved message to after join
         // g.info(entityplayer.getName() + "[" + s1 + "] logged in with entity id " + entityplayer.getId() + " at (" + entityplayer.locX + ", " + entityplayer.locY + ", " + entityplayer.locZ + ")");
@@ -270,7 +284,7 @@ public abstract class PlayerList {
         // CraftBukkit end
 
         // CraftBukkit start - sendAll above replaced with this loop
-        PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo(entityplayer.listName, true, 1000);
+        PacketPlayOutPlayerInfo packet = PacketPlayOutPlayerInfo.addPlayer( entityplayer ); // Spigot - protocol patch
         for (int i = 0; i < this.players.size(); ++i) {
             EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
 
@@ -288,7 +302,7 @@ public abstract class PlayerList {
                 continue;
             }
             // .name -> .listName
-            entityplayer.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(entityplayer1.listName, true, entityplayer1.ping));
+            entityplayer.playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( entityplayer1 )); // Spigot - protocol patch
             // CraftBukkit end
         }
     }
@@ -324,7 +338,7 @@ public abstract class PlayerList {
 
         // CraftBukkit start - .name -> .listName, replace sendAll with loop
         // this.sendAll(new PacketPlayOutPlayerInfo(entityplayer.getName(), false, 9999));
-        PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo(entityplayer.listName, false, 9999);
+        PacketPlayOutPlayerInfo packet = PacketPlayOutPlayerInfo.removePlayer( entityplayer ); // Spigot - protocol patch
         for (int i = 0; i < this.players.size(); ++i) {
             EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
 
@@ -350,7 +364,7 @@ public abstract class PlayerList {
 
         EntityPlayer entity = new EntityPlayer(this.server, this.server.getWorldServer(0), gameprofile, new PlayerInteractManager(this.server.getWorldServer(0)));
         Player player = entity.getBukkitEntity();
-        PlayerLoginEvent event = new PlayerLoginEvent(player, hostname, ((java.net.InetSocketAddress) socketaddress).getAddress());
+        PlayerLoginEvent event = new PlayerLoginEvent(player, hostname, ((java.net.InetSocketAddress) socketaddress).getAddress(), ((java.net.InetSocketAddress) loginlistener.networkManager.getRawAddress()).getAddress());
         String s;
 
         if (this.j.isBanned(gameprofile) && !this.j.get(gameprofile).hasExpired()) {
@@ -362,11 +376,11 @@ public abstract class PlayerList {
             }
 
             // return s;
-            event.disallow(PlayerLoginEvent.Result.KICK_BANNED, s);
+            if (!gameprofilebanentry.hasExpired()) event.disallow(PlayerLoginEvent.Result.KICK_BANNED, s); // Spigot
         } else if (!this.isWhitelisted(gameprofile)) {
             // return "You are not white-listed on this server!";
-            event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, "You are not white-listed on this server!");
-        } else if (this.k.isBanned(socketaddress) && !this.k.get(gameprofile).hasExpired()) {
+            event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, org.spigotmc.SpigotConfig.whitelistMessage); // Spigot
+        } else if (this.k.isBanned(socketaddress) && !this.k.get(socketaddress).hasExpired()) { // Spigot
             IpBanEntry ipbanentry = this.k.get(socketaddress);
 
             s = "Your IP address is banned from this server!\nReason: " + ipbanentry.getReason();
@@ -379,7 +393,7 @@ public abstract class PlayerList {
         } else {
             // return this.players.size() >= this.maxPlayers ? "The server is full!" : null;
             if (this.players.size() >= this.maxPlayers) {
-                event.disallow(PlayerLoginEvent.Result.KICK_FULL, "The server is full!");
+                event.disallow(PlayerLoginEvent.Result.KICK_FULL, org.spigotmc.SpigotConfig.serverFullMessage); // Spigot
             }
         }
 
@@ -492,6 +506,11 @@ public abstract class PlayerList {
             Player respawnPlayer = this.cserver.getPlayer(entityplayer1);
             PlayerRespawnEvent respawnEvent = new PlayerRespawnEvent(respawnPlayer, location, isBedSpawn);
             this.cserver.getPluginManager().callEvent(respawnEvent);
+            // Spigot Start
+            if (entityplayer.playerConnection.isDisconnected()) {
+                return entityplayer;
+            }
+            // Spigot End
 
             location = respawnEvent.getRespawnLocation();
             entityplayer.reset();
@@ -788,6 +807,8 @@ public abstract class PlayerList {
         // CraftBukkit end
     }
 
+    private int currentPing = 0;
+
     public void tick() {
         if (++this.t > 600) {
             this.t = 0;
@@ -800,6 +821,30 @@ public abstract class PlayerList {
             this.sendAll(new PacketPlayOutPlayerInfo(entityplayer.getName(), true, entityplayer.ping));
         }
         // CraftBukkit end */
+        // Spigot start
+        try
+        {
+            if ( !players.isEmpty() )
+            {
+                currentPing = ( currentPing + 1 ) % this.players.size();
+                EntityPlayer player = (EntityPlayer) this.players.get( currentPing );
+                if ( player.lastPing == -1 || Math.abs( player.ping - player.lastPing ) > 20 )
+                {
+                    Packet packet = PacketPlayOutPlayerInfo.updatePing( player ); // Spigot - protocol patch
+                    for ( EntityPlayer splayer : (List<EntityPlayer>) this.players )
+                    {
+                        if ( splayer.getBukkitEntity().canSee( player.getBukkitEntity() ) )
+                        {
+                            splayer.playerConnection.sendPacket( packet );
+                        }
+                    }
+                    player.lastPing = player.ping;
+                }
+            }
+        } catch ( Exception e ) {
+            // Better safe than sorry :)
+        }
+        // Spigot end
     }
 
     public void sendAll(Packet packet) {
@@ -1152,8 +1197,15 @@ public abstract class PlayerList {
     }
 
     public void u() {
-        for (int i = 0; i < this.players.size(); ++i) {
-            ((EntityPlayer) this.players.get(i)).playerConnection.disconnect(this.server.server.getShutdownMessage()); // CraftBukkit - add custom shutdown message
+        while (!this.players.isEmpty()) {
+            // Spigot start
+            EntityPlayer p = (EntityPlayer) this.players.get( 0 );
+            p.playerConnection.disconnect( this.server.server.getShutdownMessage() );
+            if ( ( !this.players.isEmpty() ) && ( this.players.get( 0 ) == p ) )
+            {
+                this.players.remove( 0 ); // Prevent shutdown hang if already disconnected
+            }
+            // Spigot end
         }
     }
 

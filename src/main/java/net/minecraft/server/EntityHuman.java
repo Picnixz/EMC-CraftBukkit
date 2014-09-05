@@ -19,6 +19,7 @@ import org.bukkit.event.player.PlayerBedLeaveEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 // CraftBukkit end
+import org.spigotmc.ProtocolData; // Spigot - protocol patch
 
 public abstract class EntityHuman extends EntityLiving implements ICommandListener {
 
@@ -89,9 +90,10 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
 
     protected void c() {
         super.c();
-        this.datawatcher.a(16, Byte.valueOf((byte) 0));
+        this.datawatcher.a( 16, new ProtocolData.DualByte( (byte) 0, (byte) 0 ) ); // Spigot - protocol patch, handle metadata usage change (show cape -> collisions)
         this.datawatcher.a(17, Float.valueOf(0.0F));
         this.datawatcher.a(18, Integer.valueOf(0));
+        this.datawatcher.a( 10, new ProtocolData.HiddenByte( (byte) 0 ) ); // Spigot - protocol patch, handle new metadata value
     }
 
     public boolean by() {
@@ -277,6 +279,10 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                 // Update client
                 if (this instanceof EntityPlayer) {
                     ((EntityPlayer) this).playerConnection.sendPacket(new PacketPlayOutSetSlot((byte) 0, activeContainer.getSlot((IInventory) this.inventory, this.inventory.itemInHandIndex).index, this.f));
+                    // Spigot Start
+                    ((EntityPlayer) this).getBukkitEntity().updateInventory();
+                    ((EntityPlayer) this).getBukkitEntity().updateScaledHealth();
+                    // Spigot End
                 }
                 return;
             }
@@ -323,6 +329,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
     public void setPassengerOf(Entity entity) {
         // CraftBukkit end
         if (this.vehicle != null && entity == null) {
+            world.getServer().getPluginManager().callEvent( new org.spigotmc.event.entity.EntityDismountEvent( this.getBukkitEntity(), this.vehicle.getBukkitEntity() ) ); // Spigot
             // CraftBukkit start - use parent method instead to correctly fire VehicleExitEvent
             Entity originalVehicle = this.vehicle;
             // First statement moved down, second statement handled in parent method.
@@ -429,7 +436,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
 
             List list = this.world.getEntities(this, axisalignedbb);
 
-            if (list != null) {
+            if (list != null && this.S()) { // Spigot: Add this.S() condition (second !this.isDead near bottom of EntityLiving)
                 for (int i = 0; i < list.size(); ++i) {
                     Entity entity = (Entity) list.get(i);
 
@@ -1001,7 +1008,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                             }
                         }
 
-                        this.applyExhaustion(0.3F);
+                        this.applyExhaustion(world.spigotConfig.combatExhaustion); // Spigot - Change to use configurable value
                     } else if (flag1) {
                         entity.extinguish();
                     }
@@ -1219,15 +1226,23 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         return this.sleeping && this.sleepTicks >= 100;
     }
 
-    protected void b(int i, boolean flag) {
-        byte b0 = this.datawatcher.getByte(16);
-
+    // Spigot start - protocol patch, handle metadata usage change (show cape -> collisions)
+    protected void b(int i, boolean flag, int version) {
+        ProtocolData.DualByte db = this.datawatcher.getDualByte( 16 );
+        byte b0 = version >= 16 ? db.value2 : db.value;
         if (flag) {
-            this.datawatcher.watch(16, Byte.valueOf((byte) (b0 | 1 << i)));
+            b0 = (byte) ( b0 | 1 << i );
         } else {
-            this.datawatcher.watch(16, Byte.valueOf((byte) (b0 & ~(1 << i))));
+            b0 = (byte) (b0 & ~(1 << i));
         }
+        if (version >= 16) {
+            db.value2 = b0;
+        } else {
+            db.value = b0;
+        }
+        this.datawatcher.watch(16, db);
     }
+    // Spigot end
 
     public void b(IChatBaseComponent ichatbasecomponent) {}
 
@@ -1261,9 +1276,9 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         super.bj();
         this.a(StatisticList.r, 1);
         if (this.isSprinting()) {
-            this.applyExhaustion(0.8F);
+            this.applyExhaustion(world.spigotConfig.sprintExhaustion); // Spigot - Change to use configurable value
         } else {
-            this.applyExhaustion(0.2F);
+            this.applyExhaustion(world.spigotConfig.walkExhaustion); // Spigot - Change to use configurable value
         }
     }
 

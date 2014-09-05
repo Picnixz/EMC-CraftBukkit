@@ -216,9 +216,61 @@ public final class ItemStack {
         if (nbttagcompound.hasKeyOfType("tag", 10)) {
             // CraftBukkit - make defensive copy as this data may be coming from the save thread
             this.tag = (NBTTagCompound) nbttagcompound.getCompound("tag").clone();
+            validateSkullSkin(); // Spigot
         }
     }
 
+    // Spigot start - make sure the tag is given the full gameprofile if it's a skull (async lookup)
+    public void validateSkullSkin()
+    {
+        if ( this.item == Items.SKULL && this.getData() == 3 )
+        {
+            String owner;
+            if ( this.tag.hasKeyOfType( "SkullOwner", 8 ) )
+            {
+                owner = this.tag.getString( "SkullOwner" );
+            } else if ( this.tag.hasKeyOfType( "SkullOwner", 10 ) )
+            {
+                net.minecraft.util.com.mojang.authlib.GameProfile profile = GameProfileSerializer.deserialize( this.tag.getCompound( "SkullOwner" ) );
+                if ( profile == null || !profile.getProperties().isEmpty() )
+                {
+                    return;
+                } else
+                {
+                    owner = profile.getName();
+                }
+            } else
+            {
+                return;
+            }
+
+            final String finalOwner = owner;
+            TileEntitySkull.executor.execute( new Runnable()
+            {
+                @Override
+                public void run()
+                {
+
+                    final net.minecraft.util.com.mojang.authlib.GameProfile profile = TileEntitySkull.skinCache.getUnchecked( finalOwner.toLowerCase() );
+                    if ( profile != null )
+                    {
+                        MinecraftServer.getServer().processQueue.add( new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                NBTTagCompound nbtProfile = new NBTTagCompound();
+                                GameProfileSerializer.serialize( nbtProfile, profile );
+                                ItemStack.this.tag.set( "SkullOwner", nbtProfile );
+                            }
+                        } );
+                    }
+                }
+            } );
+        }
+    }
+    // Spigot end
+    
     public int getMaxStackSize() {
         return this.getItem().getMaxStackSize();
     }
@@ -228,7 +280,13 @@ public final class ItemStack {
     }
 
     public boolean g() {
-        return this.item.getMaxDurability() <= 0 ? false : !this.hasTag() || !this.getTag().getBoolean("Unbreakable");
+        // Spigot Start
+        if ( this.item.getMaxDurability() <= 0 )
+        {
+            return false;
+        }
+        return ( !hasTag() ) || ( !getTag().getBoolean( "Unbreakable" ) );
+        // Spigot End
     }
 
     public boolean usesData() {
@@ -279,7 +337,13 @@ public final class ItemStack {
         return this.item.getMaxDurability();
     }
 
+    // Spigot start
     public boolean isDamaged(int i, Random random) {
+        return isDamaged(i, random, null);
+    }
+
+    public boolean isDamaged(int i, Random random, EntityLiving entityliving) {
+        // Spigot end
         if (!this.g()) {
             return false;
         } else {
@@ -294,7 +358,16 @@ public final class ItemStack {
                 }
 
                 i -= k;
-                if (i <= 0) {
+                // Spigot start
+                if (entityliving instanceof EntityPlayer) {
+                    org.bukkit.craftbukkit.inventory.CraftItemStack item = org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(this);
+                    org.bukkit.event.player.PlayerItemDamageEvent event = new org.bukkit.event.player.PlayerItemDamageEvent((org.bukkit.entity.Player) entityliving.getBukkitEntity(), item, i);
+                    org.bukkit.Bukkit.getServer().getPluginManager().callEvent(event);
+                    if (event.isCancelled()) return false;
+                    i = event.getDamage();
+                }
+                // Spigot end
+                if (i <= 0 ) {
                     return false;
                 }
             }
@@ -307,7 +380,7 @@ public final class ItemStack {
     public void damage(int i, EntityLiving entityliving) {
         if (!(entityliving instanceof EntityHuman) || !((EntityHuman) entityliving).abilities.canInstantlyBuild) {
             if (this.g()) {
-                if (this.isDamaged(i, entityliving.aI())) {
+                if (this.isDamaged(i, entityliving.aI(), entityliving)) { // Spigot
                     entityliving.a(this);
                     --this.count;
                     if (entityliving instanceof EntityHuman) {
@@ -436,6 +509,7 @@ public final class ItemStack {
 
     public void setTag(NBTTagCompound nbttagcompound) {
         this.tag = nbttagcompound;
+        validateSkullSkin(); // Spigot
     }
 
     public String getName() {
