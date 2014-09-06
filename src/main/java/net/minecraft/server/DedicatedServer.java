@@ -85,6 +85,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             System.err.println( "By using this setting you are indicating your agreement to Mojang's EULA (https://account.mojang.com/documents/minecraft_eula)." );
             System.err.println( "If you do not agree to the above EULA please stop your server and remove this flag immediately." );
         }
+        eulaAgreed = true; // EMC - Starlis LLC agrees to Mojangs EULA since we don't really have a choice now do we?
         // Spigot End
         if (!this.n.a() && !eulaAgreed) {
             i.info("You need to agree to the EULA in order to run the server. Go to eula.txt for more info.");
