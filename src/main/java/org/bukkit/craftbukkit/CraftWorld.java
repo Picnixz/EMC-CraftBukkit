@@ -377,6 +377,12 @@ public class CraftWorld implements World {
     public Entity spawnEntity(Location loc, EntityType type, SpawnReason reason) {
         return spawn(loc, type.getEntityClass(), reason);
     }
+    public Entity spawnEntity(Location loc, EntityType type, com.google.common.base.Predicate<Entity> prepare) {
+        return spawn(loc, type.getEntityClass(), SpawnReason.DEFAULT, prepare);
+    }
+    public Entity spawnEntity(Location loc, EntityType type, SpawnReason reason, com.google.common.base.Predicate<Entity> prepare) {
+        return spawn(loc, type.getEntityClass(), reason, prepare);
+    }
     // EMC end
     public Entity spawnEntity(Location loc, EntityType entityType) {
         return spawn(loc, entityType.getEntityClass());
@@ -889,8 +895,9 @@ public class CraftWorld implements World {
         return spawnFallingBlock(location, org.bukkit.Material.getMaterial(blockId), blockData);
     }
 
+    public <T extends Entity> T spawn(Location location, Class<T> clazz, SpawnReason reason) throws IllegalArgumentException { return spawn(location, clazz, reason, null); } // EMC
     @SuppressWarnings("unchecked")
-    public <T extends Entity> T spawn(Location location, Class<T> clazz, SpawnReason reason) throws IllegalArgumentException {
+    public <T extends Entity> T spawn(Location location, Class<T> clazz, SpawnReason reason, com.google.common.base.Predicate<Entity> prepare) throws IllegalArgumentException { // EMC
         if (location == null || clazz == null) {
             throw new IllegalArgumentException("Location or entity class cannot be null");
         }
@@ -1108,6 +1115,7 @@ public class CraftWorld implements World {
                 ((EntityInsentient) entity).prepare((GroupDataEntity) null);
             }
 
+            if (prepare != null) { prepare.apply(entity.getBukkitEntity()); } // EMC
             world.addEntity(entity, reason);
             return (T) entity.getBukkitEntity();
         }
