@@ -13,7 +13,7 @@ import org.spigotmc.ProtocolData; // Spigot - protocol patch
 
 public class DataWatcher {
 
-    private final Entity a;
+    public final Entity a; // EMC
     private boolean b = true;
     // Spigot Start
     private static final net.minecraft.util.gnu.trove.map.TObjectIntMap classToId = new net.minecraft.util.gnu.trove.map.hash.TObjectIntHashMap( 10, 0.5f, -1 );
@@ -95,6 +95,15 @@ public class DataWatcher {
     }
 
     // Spigot start - protocol patch
+    public Object delObject(int i) {return dataValues.remove(i);} // EMC
+    public Object getObject(int i) {return i(i).b();} // EMC
+    public DataWatcher clone() {
+        DataWatcher n = new DataWatcher(a);
+        for (int i : dataValues.keys()) {
+            n.a(i, getObject(i));
+        }
+        return n;
+    }
     public ProtocolData.DualByte getDualByte(int i) {
         return (ProtocolData.DualByte) this.i(i).b();
     }
@@ -263,6 +272,7 @@ public class DataWatcher {
         int i = (type << 5 | watchableobject.a() & 31) & 255;
 
         packetdataserializer.writeByte(i);
+
         switch (type) {
         case 0:
             if ( watchableobject.b() instanceof ProtocolData.DualByte )

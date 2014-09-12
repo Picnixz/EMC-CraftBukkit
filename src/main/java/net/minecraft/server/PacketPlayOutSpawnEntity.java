@@ -14,6 +14,7 @@ public class PacketPlayOutSpawnEntity extends Packet {
     private int j;
     private int k;
 
+    public Entity entity; // EMC
     public PacketPlayOutSpawnEntity() {}
 
     public PacketPlayOutSpawnEntity(Entity entity, int i) {
@@ -21,6 +22,7 @@ public class PacketPlayOutSpawnEntity extends Packet {
     }
 
     public PacketPlayOutSpawnEntity(Entity entity, int i, int j) {
+        this.entity = entity; // EMC
         this.a = entity.getId();
         this.b = MathHelper.floor(entity.locX * 32.0D);
         this.c = MathHelper.floor(entity.locY * 32.0D);

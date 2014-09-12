@@ -5,9 +5,9 @@ import java.util.List;
 public class PacketPlayOutSpawnEntityLiving extends Packet {
 
     private int a;
-    private int b;
+    public int b; // EMC
     private int c;
-    private int d;
+    public int d; // EMC
     private int e;
     private int f;
     private int g;
@@ -15,12 +15,14 @@ public class PacketPlayOutSpawnEntityLiving extends Packet {
     private byte i;
     private byte j;
     private byte k;
-    private DataWatcher l;
+    public DataWatcher l; // EMC
     private List m;
+    public EntityLiving entityLiving; // EMC
 
     public PacketPlayOutSpawnEntityLiving() {}
 
     public PacketPlayOutSpawnEntityLiving(EntityLiving entityliving) {
+        this.entityLiving = entityliving; // EMC
         this.a = entityliving.getId();
         this.b = (byte) EntityTypes.a(entityliving);
         this.c = entityliving.as.a(entityliving.locX);

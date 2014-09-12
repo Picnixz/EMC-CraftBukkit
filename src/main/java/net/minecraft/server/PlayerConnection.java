@@ -80,6 +80,7 @@ public class PlayerConnection implements PacketPlayInListener {
     private double q;
     public boolean checkMovement = true; // CraftBukkit - private -> public
     private boolean processedDisconnect; // CraftBukkit - added
+    public boolean is18; // EMC
 
     public PlayerConnection(MinecraftServer minecraftserver, NetworkManager networkmanager, EntityPlayer entityplayer) {
         this.minecraftServer = minecraftserver;
@@ -90,6 +91,7 @@ public class PlayerConnection implements PacketPlayInListener {
 
         // CraftBukkit start - add fields and methods
         this.server = minecraftserver.server;
+        this.is18 = NetworkManager.a( networkManager ).attr( NetworkManager.protocolVersion ).get() >= 17; // EMC
     }
 
     private final org.bukkit.craftbukkit.CraftServer server;
@@ -793,6 +795,7 @@ public class PlayerConnection implements PacketPlayInListener {
             }
         }
 
+        packet = com.empireminecraft.cbmisc.CBMiscUtils.checkHologram(packet, this); // EMC
         // CraftBukkit start
         if (packet == null) {
             return;

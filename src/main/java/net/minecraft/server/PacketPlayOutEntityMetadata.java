@@ -4,12 +4,16 @@ import java.util.List;
 
 public class PacketPlayOutEntityMetadata extends Packet {
 
-    private int a;
-    private List b;
+    public int a; // EMC
+    public boolean flag; // EMC
+    public  List b; // EMC
+    public DataWatcher data; // EMC
 
     public PacketPlayOutEntityMetadata() {}
 
     public PacketPlayOutEntityMetadata(int i, DataWatcher datawatcher, boolean flag) {
+        this.data = datawatcher; // EMC
+        this.flag = flag; // EMC
         this.a = i;
         if (flag) {
             this.b = datawatcher.c();
