@@ -1158,8 +1158,9 @@ public class CraftWorld implements World {
         int chunkCoordX = chunkcoordinates.x >> 4;
         int chunkCoordZ = chunkcoordinates.z >> 4;
         // Cycle through the 25x25 Chunks around it to load/unload the chunks.
-        for (int x = -12; x <= 12; x++) {
-            for (int z = -12; z <= 12; z++) {
+        int radius = world.spigotConfig.keepLoadedRange / 16; // Spigot
+        for (int x = -radius; x <= radius; x++) { // Spigot
+            for (int z = -radius; z <= radius; z++) { // Spigot
                 if (keepLoaded) {
                     loadChunk(chunkCoordX + x, chunkCoordZ + z);
                 } else {

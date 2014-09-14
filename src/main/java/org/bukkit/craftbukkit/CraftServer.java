@@ -1018,7 +1018,7 @@ public final class CraftServer implements Server {
         System.out.print("Preparing start region for level " + (console.worlds.size() - 1) + " (Seed: " + internal.getSeed() + ")");
 
         if (internal.getWorld().getKeepSpawnInMemory()) {
-            short short1 = 196;
+            short short1 = internal.spigotConfig.keepLoadedRange; // Spigot
             long i = System.currentTimeMillis();
             for (int j = -short1; j <= short1; j += 16) {
                 for (int k = -short1; k <= short1; k += 16) {

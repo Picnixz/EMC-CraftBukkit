@@ -311,9 +311,9 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             ChunkCoordinates chunkcoordinates = worldserver.getSpawn();
             long j = ar();
             i = 0;
-
-            for (int k = -192; k <= 192 && this.isRunning(); k += 16) {
-                for (int l = -192; l <= 192 && this.isRunning(); l += 16) {
+            short radius = worldserver.spigotConfig.keepLoadedRange; // Spigot
+            for (int k = -radius; k <= radius && this.isRunning(); k += 16) { // Spigot
+                for (int l = -radius; l <= radius && this.isRunning(); l += 16) { // Spigot
                     long i1 = ar();
 
                     if (i1 - j > 1000L) {

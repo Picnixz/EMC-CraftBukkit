@@ -127,10 +127,14 @@ public class SpigotWorldConfig
     }
 
     public int viewDistance;
+    public short keepLoadedRange;
     private void viewDistance()
     {
         viewDistance = getInt( "view-distance", Bukkit.getViewDistance() );
         log( "View Distance: " + viewDistance );
+
+        keepLoadedRange = (short) (Math.min(getInt("keep-spawn-loaded-range", viewDistance), viewDistance) * 16);
+        log( "Keep Spawn Loaded Range: " + (keepLoadedRange/16));
     }
 
     public byte mobSpawnRange;
