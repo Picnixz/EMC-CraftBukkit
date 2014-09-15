@@ -155,8 +155,8 @@ public class NetworkManager extends SimpleChannelInboundHandler {
 
     private void i() {
         if (this.m != null && this.m.isOpen()) {
-            while (!this.l.isEmpty()) {
-                QueuedPacket queuedpacket = (QueuedPacket) this.l.poll();
+            QueuedPacket queuedpacket; // Spigot
+            while ((queuedpacket = (QueuedPacket) this.l.poll()) != null) { // Spigot
 
                 this.b(QueuedPacket.a(queuedpacket), QueuedPacket.b(queuedpacket));
             }
@@ -176,8 +176,8 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         }
 
         if (this.o != null) {
-            for (int i = 1000; !this.k.isEmpty() && i >= 0; --i) {
-                Packet packet = (Packet) this.k.poll();
+            Packet packet; // Spigot
+            for (int i = org.spigotmc.SpigotConfig.maxPacketsPerPlayer; (packet = (Packet) this.k.poll()) != null && i >= 0; --i) { // Spigot
 
                 // CraftBukkit start
                 if (!this.isConnected() || !this.m.config().isAutoRead()) {

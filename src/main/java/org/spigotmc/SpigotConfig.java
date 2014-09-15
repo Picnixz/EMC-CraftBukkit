@@ -401,4 +401,9 @@ public class SpigotConfig
             Bukkit.getLogger().info( "Debug logging is disabled" );
         }
     }
+
+    public static int maxPacketsPerPlayer;
+    private static void maxPacketsPerPlayer() {
+        maxPacketsPerPlayer = getInt("max-packets-per-player", 1000);
+    }
 }
