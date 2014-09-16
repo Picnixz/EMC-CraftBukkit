@@ -42,6 +42,8 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     private final boolean j;
     private final Queue k = Queues.newConcurrentLinkedQueue();
     private final Queue l = Queues.newConcurrentLinkedQueue();
+    public void clearQueues() { k.clear(); l.clear(); } // Spigot
+    EntityPlayer player; // Spigot
     private Channel m;
     // Spigot Start
     public SocketAddress n;
@@ -128,7 +130,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         if (this.m != null && this.m.isOpen()) {
             this.i();
             this.b(packet, agenericfuturelistener);
-        } else {
+        } else if (player != null && !player.playerConnection.processedDisconnect) { // Spigot
             this.l.add(new QueuedPacket(packet, agenericfuturelistener));
         }
     }

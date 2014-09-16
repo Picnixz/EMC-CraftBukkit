@@ -79,10 +79,11 @@ public class PlayerConnection implements PacketPlayInListener {
     private double z;
     private double q;
     public boolean checkMovement = true; // CraftBukkit - private -> public
-    private boolean processedDisconnect; // CraftBukkit - added
+    public boolean processedDisconnect; // CraftBukkit - added // Spigot - private -> public
     public boolean is18; // EMC
 
     public PlayerConnection(MinecraftServer minecraftserver, NetworkManager networkmanager, EntityPlayer entityplayer) {
+        networkmanager.player = entityplayer; // Spigot
         this.minecraftServer = minecraftserver;
         this.networkManager = networkmanager;
         networkmanager.a((PacketListener) this);
@@ -744,6 +745,7 @@ public class PlayerConnection implements PacketPlayInListener {
         if ((quitMessage != null) && (quitMessage.length() > 0)) {
             this.minecraftServer.getPlayerList().sendMessage(CraftChatMessage.fromString(quitMessage));
         }
+        this.player.playerConnection.networkManager.clearQueues(); // Spigot
         // CraftBukkit end
         if (this.minecraftServer.N() && this.player.getName().equals(this.minecraftServer.M())) {
             c.info("Stopping singleplayer server as player logged out");
