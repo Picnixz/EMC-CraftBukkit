@@ -6,13 +6,11 @@ import net.minecraft.server.Block;
 import net.minecraft.server.Blocks;
 import net.minecraft.server.World;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.spigotmc.timings.SpigotTimings;
 
 public class AntiXray
 {
 
-    private static final CustomTimingsHandler update = new CustomTimingsHandler( "xray - update" );
-    private static final CustomTimingsHandler obfuscate = new CustomTimingsHandler( "xray - obfuscate" );
-    /*========================================================================*/
     // Used to keep track of which blocks to obfuscate
     private final boolean[] obfuscateBlocks = new boolean[ Short.MAX_VALUE ];
     // Used to select a random replacement ore
@@ -50,9 +48,9 @@ public class AntiXray
     {
         if ( world.spigotConfig.antiXray )
         {
-            update.startTiming();
+            SpigotTimings.antiXrayUpdateTimer.startTiming();
             updateNearbyBlocks( world, x, y, z, 2, false ); // 2 is the radius, we shouldn't change it as that would make it exponentially slower
-            update.stopTiming();
+            SpigotTimings.antiXrayUpdateTimer.stopTiming();
         }
     }
 
@@ -64,9 +62,9 @@ public class AntiXray
     {
         if ( world.spigotConfig.antiXray )
         {
-            obfuscate.startTiming();
+            SpigotTimings.antiXrayObfuscateTimer.startTiming();
             obfuscate( chunkX, chunkY, bitmask, buffer, world, false );
-            obfuscate.stopTiming();
+            SpigotTimings.antiXrayObfuscateTimer.stopTiming();
         }
     }
 
