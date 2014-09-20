@@ -1435,6 +1435,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
             return java.util.Collections.unmodifiableSet( ret );
         }
+
+        @Override
+        public int getPing()
+        {
+            return getHandle().lastPing;
+        }
     };
 
     public Player.Spigot spigot()

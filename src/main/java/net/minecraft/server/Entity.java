@@ -15,7 +15,8 @@ import org.bukkit.entity.Hanging;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Vehicle;
-import org.spigotmc.CustomTimingsHandler; // Spigot
+import org.spigotmc.timings.SpigotTimings; // Spigot
+import org.spigotmc.timings.Timing; // Spigot
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.painting.PaintingBreakByEntityEvent;
@@ -128,7 +129,7 @@ public abstract class Entity {
     public org.bukkit.projectiles.ProjectileSource projectileSource; // CraftBukkit - For projectiles only
 
     // Spigot start
-    public CustomTimingsHandler tickTimer = org.bukkit.craftbukkit.SpigotTimings.getEntityTimings(this); // Spigot
+    public Timing tickTimer = SpigotTimings.getEntityTimings(this); // Spigot
     public final byte activationType = org.spigotmc.ActivationRange.initializeEntityActivationType(this);
     public final boolean defaultActivationState;
     public long activatedTick = 0;
@@ -448,7 +449,6 @@ public abstract class Entity {
             return;
         }
         // CraftBukkit end
-        org.bukkit.craftbukkit.SpigotTimings.entityMoveTimer.startTiming(); // Spigot
         if (this.X) {
             this.boundingBox.d(d0, d1, d2);
             this.locX = (this.boundingBox.a + this.boundingBox.d) / 2.0D;
@@ -757,7 +757,6 @@ public abstract class Entity {
 
             this.world.methodProfiler.b();
         }
-        org.bukkit.craftbukkit.SpigotTimings.entityMoveTimer.stopTiming(); // Spigot
     }
 
     protected String H() {

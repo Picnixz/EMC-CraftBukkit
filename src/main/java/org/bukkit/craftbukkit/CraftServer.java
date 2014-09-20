@@ -406,6 +406,7 @@ public final class CraftServer implements Server {
             // loadCustomPermissions(); // EMC - Moving up
             DefaultPermissions.registerCorePermissions();
             helpMap.initializeCommands();
+            org.spigotmc.timings.Timings.reset(); // Spigot
         }
     }
 
@@ -1841,7 +1842,13 @@ public final class CraftServer implements Server {
     {
 
         @Override
-        public YamlConfiguration getConfig()
+        public YamlConfiguration getBukkitConfig()
+        {
+            return configuration;
+        }
+
+        @Override
+        public YamlConfiguration getSpigotConfig()
         {
             return org.spigotmc.SpigotConfig.config;
         }

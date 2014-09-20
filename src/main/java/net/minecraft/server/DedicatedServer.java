@@ -18,7 +18,7 @@ import java.io.PrintStream;
 import org.apache.logging.log4j.Level;
 
 import org.bukkit.craftbukkit.LoggerOutputStream;
-import org.bukkit.craftbukkit.SpigotTimings; // Spigot
+import org.spigotmc.timings.SpigotTimings; // Spigot
 import org.bukkit.event.server.ServerCommandEvent;
 // CraftBukkit end
 

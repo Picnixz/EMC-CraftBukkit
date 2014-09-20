@@ -16,7 +16,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.LongHashSet;
-import org.bukkit.craftbukkit.SpigotTimings; // Spigot
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -26,6 +25,7 @@ import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
+import org.spigotmc.timings.WorldTimingsHandler; // Spigot
 // CraftBukkit end
 
 public abstract class World implements IBlockAccess {
@@ -198,7 +198,7 @@ public abstract class World implements IBlockAccess {
     public ChunkGenerator generator;
     public final org.spigotmc.SpigotWorldConfig spigotConfig; // Spigot
 
-    public final SpigotTimings.WorldTimingsHandler timings; // Spigot
+    public final WorldTimingsHandler timings; // Spigot
 
     public CraftWorld getWorld() {
         return this.world;
@@ -251,7 +251,7 @@ public abstract class World implements IBlockAccess {
 
         this.worldProvider.a(this);
         this.chunkProvider = this.j();
-        timings = new SpigotTimings.WorldTimingsHandler(this); // Spigot - code below can generate new world and access timings
+        timings = new WorldTimingsHandler(this); // Spigot - code below can generate new world and access timings
         if (!this.worldData.isInitialized()) {
             try {
                 this.a(worldsettings);
@@ -1421,6 +1421,7 @@ public abstract class World implements IBlockAccess {
         }
 
         this.methodProfiler.c("remove");
+        timings.entityRemoval.startTiming(); // Spigot
         this.entityList.removeAll(this.f);
 
         int j;
@@ -1440,12 +1441,14 @@ public abstract class World implements IBlockAccess {
         }
 
         this.f.clear();
+        timings.entityRemoval.stopTiming(); // Spigot
         this.methodProfiler.c("regular");
 
         org.spigotmc.ActivationRange.activateEntities(this); // Spigot
         timings.entityTick.startTiming(); // Spigot
         guardEntityList = true; // Spigot
         // CraftBukkit start - Use field for loop variable
+        org.spigotmc.timings.TimingHistory.entityTicks += this.entityList.size(); // Spigot
         for (this.tickPosition = 0; this.tickPosition < this.entityList.size(); ++this.tickPosition) {
             entity = (Entity) this.entityList.get(this.tickPosition);
             if (entity.vehicle != null) {
@@ -1460,12 +1463,12 @@ public abstract class World implements IBlockAccess {
             this.methodProfiler.a("tick");
             if (!entity.dead) {
                 try {
-                    SpigotTimings.tickEntityTimer.startTiming(); // Spigot
+                    entity.tickTimer.startTiming(); // Spigot
                     this.playerJoinedWorld(entity);
-                    SpigotTimings.tickEntityTimer.stopTiming(); // Spigot
+                    entity.tickTimer.stopTiming(); // Spigot
                 } catch (Throwable throwable1) {
                     // EMC start
-                    SpigotTimings.tickEntityTimer.stopTiming(); // Spigot
+                    entity.tickTimer.stopTiming(); // Spigot
                     System.err.println("Entity threw exception at " + entity.world.getWorld().getName()+":"+entity.locX +"," + entity.locY+","+entity.locZ);
                     throwable1.printStackTrace();
                     entity.dead = true;
@@ -1509,6 +1512,7 @@ public abstract class World implements IBlockAccess {
             this.b.clear();
         }
         // Spigot End
+        org.spigotmc.timings.TimingHistory.tileEntityTicks += this.tileEntityList.size(); // Spigot
 
         this.initializeHoppers(); // Spigot - Initializes hoppers which have been added recently.
         Iterator iterator = this.tileEntityList.iterator();
@@ -1627,7 +1631,6 @@ public abstract class World implements IBlockAccess {
             entity.ticksLived++;
             entity.inactiveTick();
         } else {
-            entity.tickTimer.startTiming(); // Spigot
             // CraftBukkit end
             entity.S = entity.locX;
             entity.T = entity.locY;
@@ -1636,6 +1639,7 @@ public abstract class World implements IBlockAccess {
             entity.lastPitch = entity.pitch;
             if (flag && entity.ag && !entity.isDisabled) { // EMC
                 ++entity.ticksLived;
+                ++org.spigotmc.timings.TimingHistory.activatedEntityTicks; // Spigot
                 if (entity.vehicle != null) {
                     entity.ab();
                 } else {
@@ -1690,7 +1694,6 @@ public abstract class World implements IBlockAccess {
                     entity.passenger = null;
                 }
             }
-            entity.tickTimer.stopTiming(); // Spigot
         }
     }
 

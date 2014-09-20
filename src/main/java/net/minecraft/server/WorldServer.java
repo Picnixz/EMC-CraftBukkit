@@ -207,13 +207,13 @@ public class WorldServer extends World {
 
         timings.doChunkUnload.stopTiming(); // Spigot
         this.methodProfiler.c("tickPending");
-        timings.doTickPending.startTiming(); // Spigot
+        timings.scheduledBlocks.startTiming(); // Spigot
         this.a(false);
-        timings.doTickPending.stopTiming(); // Spigot
+        timings.scheduledBlocks.stopTiming(); // Spigot
         this.methodProfiler.c("tickBlocks");
-        timings.doTickTiles.startTiming(); // Spigot
+        timings.chunkTicks.startTiming(); // Spigot
         this.g();
-        timings.doTickTiles.stopTiming(); // Spigot
+        timings.chunkTicks.stopTiming(); // Spigot
         this.methodProfiler.c("chunkMap");
         timings.doChunkMap.startTiming(); // Spigot
         this.manager.flush();
@@ -409,6 +409,7 @@ public class WorldServer extends World {
             }
 
             this.methodProfiler.c("tickBlocks");
+            timings.chunkTicksBlocks.startTiming(); // Spigot
             ChunkSection[] achunksection = chunk.getSections();
 
             j1 = achunksection.length;
@@ -435,6 +436,7 @@ public class WorldServer extends World {
                     }
                 }
             }
+            timings.chunkTicksBlocks.stopTiming(); // Spigot
 
             this.methodProfiler.b();
         }
@@ -539,6 +541,7 @@ public class WorldServer extends World {
 
             this.methodProfiler.a("cleaning");
 
+            timings.scheduledBlocksCleanup.startTiming(); // Spigot
             NextTickListEntry nextticklistentry;
 
             for (int j = 0; j < i; ++j) {
@@ -551,9 +554,11 @@ public class WorldServer extends World {
                 this.M.remove(nextticklistentry);
                 this.V.add(nextticklistentry);
             }
+            timings.scheduledBlocksCleanup.stopTiming(); // Spigot
 
             this.methodProfiler.b();
             this.methodProfiler.a("ticking");
+            timings.scheduledBlocksTicking.startTiming(); // Spigot
             Iterator iterator = this.V.iterator();
 
             while (iterator.hasNext()) {
@@ -587,6 +592,7 @@ public class WorldServer extends World {
                     this.a(nextticklistentry.a, nextticklistentry.b, nextticklistentry.c, nextticklistentry.a(), 0);
                 }
             }
+            timings.scheduledBlocksTicking.stopTiming(); // Spigot
 
             this.methodProfiler.b();
             this.V.clear();

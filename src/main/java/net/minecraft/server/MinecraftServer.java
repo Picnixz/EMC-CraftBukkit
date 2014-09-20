@@ -37,7 +37,7 @@ import jline.console.ConsoleReader;
 import joptsimple.OptionSet;
 
 import org.bukkit.World.Environment;
-import org.bukkit.craftbukkit.SpigotTimings; // Spigot
+import org.spigotmc.timings.SpigotTimings; // Spigot
 import org.bukkit.craftbukkit.util.Waitable;
 import org.bukkit.event.server.RemoteServerCommandEvent;
 import org.bukkit.event.world.WorldSaveEvent;
@@ -388,6 +388,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
     public void stop() throws ExceptionWorldConflict { // CraftBukkit - added throws
         if (!this.M) {
+            org.spigotmc.timings.SpigotTimings.stopServer(); // Spigot
             i.info("Stopping server");
 
             if (this.ai() != null) {
@@ -582,7 +583,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     protected void t() {}
 
     protected void u() throws ExceptionWorldConflict { // CraftBukkit - added throws
-        SpigotTimings.serverTickTimer.startTiming(); // Spigot
+        org.spigotmc.timings.TimingsManager.FULL_SERVER_TICK.startTiming(); // Spigot
         long i = System.nanoTime();
 
         ++this.ticks;
@@ -642,8 +643,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         this.methodProfiler.b();
         this.methodProfiler.b();
         org.spigotmc.WatchdogThread.tick(); // Spigot
-        SpigotTimings.serverTickTimer.stopTiming(); // Spigot
-        org.spigotmc.CustomTimingsHandler.tick(); // Spigot
+        org.spigotmc.timings.TimingsManager.FULL_SERVER_TICK.stopTiming(); // Spigot
     }
 
     public void v() {
