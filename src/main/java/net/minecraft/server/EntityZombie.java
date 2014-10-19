@@ -370,6 +370,16 @@ public class EntityZombie extends EntityMonster {
         }
     }
 
+    // EMC start
+    @Override
+    public void die(DamageSource damagesource) {
+        if (passenger instanceof EntityChicken) {
+            ((EntityLiving) passenger).die(damagesource);
+        }
+        super.die(damagesource);
+    }
+    // EMC end
+
     public GroupDataEntity prepare(GroupDataEntity groupdataentity) {
         Object object = super.prepare(groupdataentity);
         float f = this.world.b(this.locX, this.locY, this.locZ);

@@ -122,6 +122,12 @@ public class EntityChicken extends EntityAnimal {
         return this.isChickenJockey() ? 10 : super.getExpValue(entityhuman);
     }
 
+    // EMC start
+    public boolean d(NBTTagCompound nbttagcompound) {
+        return (!(isChickenJockey() && passenger == null)) && super.d(nbttagcompound);
+    }
+    // EMC end
+
     public void b(NBTTagCompound nbttagcompound) {
         super.b(nbttagcompound);
         nbttagcompound.setBoolean("IsChickenJockey", this.bv);
