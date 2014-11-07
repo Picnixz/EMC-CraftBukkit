@@ -475,4 +475,5 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
     public void mount(Entity entity) {
         this.vehicle = null;
     }
+    @Override protected boolean isTypeNotPersistent() {return false;} // EMC
 }
