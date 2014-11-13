@@ -32,30 +32,7 @@ public abstract class World implements IBlockAccess {
 
     public boolean d;
     // Spigot start - guard entity list from removals
-    public List entityList = new ArrayList()
-    {
-        @Override
-        public Object remove(int index)
-        {
-            guard();
-            return super.remove( index );
-        }
-
-        @Override
-        public boolean remove(Object o)
-        {
-            guard();
-            return super.remove( o );
-        }
-
-        private void guard()
-        {
-            if ( guardEntityList )
-            {
-                throw new java.util.ConcurrentModificationException();
-            }
-        }
-    };
+    public List entityList = new ArrayList();
     // Spigot end
     protected List f = new ArrayList();
     public Set tileEntityList = new HashSet(); // CraftBukkit - ArrayList -> HashSet
