@@ -1434,10 +1434,10 @@ public abstract class World implements IBlockAccess {
             if (entity.ag && this.isChunkLoaded(j, k)) {
                 this.getChunkAt(j, k).b(entity);
             }
-        }
+        //} // EMC
 
-        for (i = 0; i < this.f.size(); ++i) {
-            this.b((Entity) this.f.get(i));
+        //for (i = 0; i < this.f.size(); ++i) { // EMC
+            this.b(entity); // EMC
         }
 
         this.f.clear();
