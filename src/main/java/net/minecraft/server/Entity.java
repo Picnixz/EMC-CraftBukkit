@@ -1120,7 +1120,13 @@ public abstract class Entity {
 
     public void e(NBTTagCompound nbttagcompound) {
         try {
-            nbttagcompound.set("Pos", this.a(new double[] { this.locX, this.locY + (double) this.V, this.locZ}));
+            // EMC start
+            Entity pass = this;
+            while (pass.passenger != null) {
+                pass = pass.passenger;
+            }
+            nbttagcompound.set("Pos", this.a(pass.locX, this.locY + (double) this.V, pass.locZ));
+            // EMC end
             nbttagcompound.set("Motion", this.a(new double[] { this.motX, this.motY, this.motZ}));
 
             // CraftBukkit start - Checking for NaN pitch/yaw and resetting to zero
