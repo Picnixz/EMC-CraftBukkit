@@ -263,6 +263,11 @@ public class ActivationRange
     {
         if (entity.isDisabled) return true; // EMC
         SpigotTimings.checkIfActiveTimer.startTiming();
+        // Never safe to skip fireworks or entities not yet added to chunk
+        if (!entity.isAddedToChunk() || entity instanceof EntityFireworks || entity.getBukkitEntity() instanceof org.bukkit.entity.Projectile) {
+            SpigotTimings.checkIfActiveTimer.stopTiming();
+            return true;
+        }
         boolean isActive = entity.activatedTick >= MinecraftServer.currentTick || entity.defaultActivationState;
 
         // Should this entity tick?

@@ -111,7 +111,7 @@ public abstract class Entity {
     protected DataWatcher datawatcher;
     private double g;
     private double h;
-    public boolean ag;
+    public boolean ag;public boolean isAddedToChunk() { return ag; } // Spigot
     public int ah;
     public int ai;
     public int aj;
