@@ -723,6 +723,7 @@ public abstract class EntityLiving extends Entity {
                             this.killer = null;
                         }
                     }
+                    if (entity instanceof EntityTameableAnimal) ((EntityTameableAnimal) entity).bp.setSitting(false); // EMC
                 }
 
                 if (flag) {

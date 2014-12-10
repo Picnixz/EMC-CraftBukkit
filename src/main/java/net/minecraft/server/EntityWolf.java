@@ -178,7 +178,7 @@ public class EntityWolf extends EntityTameableAnimal {
         } else {
             Entity entity = damagesource.getEntity();
 
-            this.bp.setSitting(false);
+            // this.bp.setSitting(false); // EMC
             if (entity != null && !(entity instanceof EntityHuman) && !(entity instanceof EntityArrow)) {
                 f = (f + 1.0F) / 2.0F;
             }
