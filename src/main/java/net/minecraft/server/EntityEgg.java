@@ -47,7 +47,7 @@ public class EntityEgg extends EntityProjectile {
             hatchingType = event.getHatchingType();
         }
 
-        if (hatching) {
+        if (hatching && new com.empireminecraft.customevents.EggHatchEvent(this.getBukkitEntity()).callEvent()) { // EMC
             for (int k = 0; k < numHatching; k++) {
                 org.bukkit.entity.Entity entity = world.getWorld().spawn(new org.bukkit.Location(world.getWorld(), this.locX, this.locY, this.locZ, this.yaw, 0.0F), hatchingType.getEntityClass(), org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.EGG);
                 if (entity instanceof Ageable) {
