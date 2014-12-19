@@ -485,6 +485,7 @@ public class Block {
             EntityItem entityitem = new EntityItem(world, (double) i + d0, (double) j + d1, (double) k + d2, itemstack);
 
             entityitem.pickupDelay = 10;
+            new com.empireminecraft.customevents.BlockBreakNaturallyEvent(world, i, j, k, entityitem).callEvent(); // EMC
             world.addEntity(entityitem);
         }
     }
