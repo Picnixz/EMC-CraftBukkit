@@ -44,6 +44,7 @@ public class BlockFlowerPot extends BlockContainer {
                         return false;
                     } else {
                         tileentityflowerpot.a(itemstack.getItem(), itemstack.getData());
+                        new com.empireminecraft.customevents.FlowerPotPlantEvent(tileentityflowerpot, itemstack).callEvent(); // EMC
                         tileentityflowerpot.update();
                         if (!world.setData(i, j, k, itemstack.getData(), 2)) {
                             world.notify(i, j, k);
