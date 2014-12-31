@@ -88,6 +88,11 @@ public class HandshakeListener implements PacketHandshakingInListener {
                     org.spigotmc.SpigotConfig.bungeeAddresses.contains(ip)) {
                     b.isProxied = true;
                     String[] split = packethandshakinginsetprotocol.b.split("\00");
+                    // EMC - Fix FML
+                    if (split.length == 6 && "FML".equals(split[1])) {
+                        split = new String[] {split[0], split[3], split[4], split[5]};
+                    }
+                    // EMC end
                     if ( split.length == 3 || split.length == 4 ) {
                         packethandshakinginsetprotocol.b = split[0];
                         b.n = new java.net.InetSocketAddress(split[1], ((java.net.InetSocketAddress) b.getSocketAddress()).getPort());
