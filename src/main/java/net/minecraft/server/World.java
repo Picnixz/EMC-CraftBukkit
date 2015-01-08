@@ -602,6 +602,7 @@ public abstract class World implements IBlockAccess {
     }
 
     public void applyPhysics(int i, int j, int k, Block block) {
+        if (captureBlockStates) { return; } // CraftBukkit - Cancel all physics during placement
         this.e(i - 1, j, k, block);
         this.e(i + 1, j, k, block);
         this.e(i, j - 1, k, block);
