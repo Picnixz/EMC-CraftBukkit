@@ -192,7 +192,7 @@ public class EntityItem extends Entity {
     }
 
     public boolean N() {
-        return this.world.a(this.boundingBox, Material.WATER, (Entity) this);
+        return this.inWater = this.world.a(this.boundingBox, Material.WATER, (Entity) this); // EMC - replace to 1.8 logic
     }
 
     protected void burn(int i) {
