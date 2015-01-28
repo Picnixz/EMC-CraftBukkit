@@ -26,7 +26,7 @@ public class LoginListener implements PacketLoginInListener {
     public final NetworkManager networkManager;
     private EnumProtocolState g;
     private int h;
-    private GameProfile i;
+    public GameProfile i; // EMC
     private String j;
     private SecretKey loginKey;
     public String hostname = ""; // CraftBukkit - add field

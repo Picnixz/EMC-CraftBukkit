@@ -78,6 +78,12 @@ class ThreadPlayerLookupUUID extends Thread {
         AsyncPlayerPreLoginEvent asyncEvent = new AsyncPlayerPreLoginEvent(playerName, address, uniqueId);
         server.getPluginManager().callEvent(asyncEvent);
 
+        // EMC start
+        GameProfile old = a.i;
+        a.i = new GameProfile(uniqueId, asyncEvent.getName());
+        a.i.getProperties().putAll(old.getProperties());
+        // EMC end
+
         if (PlayerPreLoginEvent.getHandlerList().getRegisteredListeners().length != 0) {
             final PlayerPreLoginEvent event = new PlayerPreLoginEvent(playerName, address, uniqueId);
             if (asyncEvent.getResult() != PlayerPreLoginEvent.Result.ALLOWED) {
