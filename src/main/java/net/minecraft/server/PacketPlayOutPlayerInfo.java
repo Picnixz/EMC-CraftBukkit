@@ -5,7 +5,9 @@ import java.io.IOException;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
 import net.minecraft.util.com.mojang.authlib.properties.Property;
 import net.minecraft.util.com.mojang.authlib.properties.PropertyMap;
+import org.bukkit.craftbukkit.scoreboard.CraftScoreboard; // EMC
 import org.bukkit.craftbukkit.util.CraftChatMessage;
+import org.bukkit.scoreboard.Team; // EMC
 
 public class PacketPlayOutPlayerInfo extends Packet {
 
@@ -21,6 +23,7 @@ public class PacketPlayOutPlayerInfo extends Packet {
 
     private int gamemode;
     private int ping;
+    private String colorName; // EMC
     private String username;
 
     public PacketPlayOutPlayerInfo() {}
@@ -33,9 +36,24 @@ public class PacketPlayOutPlayerInfo extends Packet {
     }
     */
 
+    // EMC start
+    public static String getColoredName(EntityPlayer player) {
+        String basename = player.listName != null ? player.listName : player.getName();
+        final CraftScoreboard scoreboard = player.getBukkitEntity().getScoreboard();
+        if (scoreboard == null) {
+            return basename;
+        }
+        final Team team = scoreboard.getPlayerTeam(player.getBukkitEntity());
+        if (team == null) {
+            return basename;
+        }
+        return team.getPrefix() + basename + team.getSuffix();
+    }
+    // EMC end
     public static PacketPlayOutPlayerInfo addPlayer(EntityPlayer player) {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
         packet.action = ADD_PLAYER;
+        packet.colorName = getColoredName(player); // EMC
         packet.username = player.listName;
         packet.player = player.getProfile();
         packet.ping = player.ping;
@@ -46,6 +64,7 @@ public class PacketPlayOutPlayerInfo extends Packet {
     public static PacketPlayOutPlayerInfo updatePing(EntityPlayer player) {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
         packet.action = UPDATE_LATENCY;
+        packet.colorName = getColoredName(player); // EMC
         packet.username = player.listName;
         packet.player = player.getProfile();
         packet.ping = player.ping;
@@ -55,6 +74,7 @@ public class PacketPlayOutPlayerInfo extends Packet {
     public static PacketPlayOutPlayerInfo updateGamemode(EntityPlayer player) {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
         packet.action = UPDATE_GAMEMODE;
+        packet.colorName = getColoredName(player); // EMC
         packet.username = player.listName;
         packet.player = player.getProfile();
         packet.gamemode = player.playerInteractManager.getGameMode().getId();
@@ -64,6 +84,7 @@ public class PacketPlayOutPlayerInfo extends Packet {
     public static PacketPlayOutPlayerInfo updateDisplayName(EntityPlayer player) {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
         packet.action = UPDATE_DISPLAY_NAME;
+        packet.colorName = getColoredName(player); // EMC
         packet.username = player.listName;
         packet.player = player.getProfile();
         return packet;
@@ -72,6 +93,7 @@ public class PacketPlayOutPlayerInfo extends Packet {
     public static PacketPlayOutPlayerInfo removePlayer(EntityPlayer player) {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
         packet.action = REMOVE_PLAYER;
+        packet.colorName = getColoredName(player); // EMC
         packet.username = player.listName;
         packet.player = player.getProfile();
         return packet;
@@ -105,10 +127,10 @@ public class PacketPlayOutPlayerInfo extends Packet {
                     }
                     packetdataserializer.b( gamemode );
                     packetdataserializer.b( ping );
-                    packetdataserializer.writeBoolean( username != null );
-                    if ( username != null )
+                    packetdataserializer.writeBoolean( true ); // EMC
+                    if ( true ) // EMC
                     {
-                        packetdataserializer.a( ChatSerializer.a( CraftChatMessage.fromString( username )[0] ) );
+                        packetdataserializer.a( ChatSerializer.a( CraftChatMessage.fromString( colorName )[0] ) ); // EMC
                     }
                     break;
                 case UPDATE_GAMEMODE:
@@ -118,10 +140,10 @@ public class PacketPlayOutPlayerInfo extends Packet {
                     packetdataserializer.b( ping );
                     break;
                 case UPDATE_DISPLAY_NAME:
-                    packetdataserializer.writeBoolean( username != null );
-                    if ( username != null )
+                    packetdataserializer.writeBoolean( true ); // EMC
+                    if ( true ) // EMC
                     {
-                        packetdataserializer.a( ChatSerializer.a( CraftChatMessage.fromString( username )[0] ) );
+                        packetdataserializer.a( ChatSerializer.a( CraftChatMessage.fromString( colorName )[0] ) ); // EMC
                     }
                     break;
                 case REMOVE_PLAYER:
